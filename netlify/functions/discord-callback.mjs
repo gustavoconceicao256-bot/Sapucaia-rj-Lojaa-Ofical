@@ -223,6 +223,12 @@ export default async (req) => {
 
     const now = Date.now();
 
+    /*
+     * Dados da conta Discord.
+     *
+     * O ID é o identificador principal da conta.
+     * O avatar é guardado para a loja mostrar a foto.
+     */
     const sessionData = {
       id: String(user.id),
 
@@ -239,10 +245,17 @@ export default async (req) => {
       email:
         user.email || null,
 
+      avatar:
+        user.avatar || null,
+
       iat: now,
 
+      /*
+       * A conta fica reconhecida por 30 dias
+       * enquanto o cookie de sessão existir e for válido.
+       */
       exp:
-        now + 60 * 60 * 1000
+        now + 30 * 24 * 60 * 60 * 1000
     };
 
     const payload = Buffer
@@ -274,15 +287,21 @@ export default async (req) => {
         'no-cache'
     });
 
+    /*
+     * Sessão da conta Discord por 30 dias.
+     */
     headers.append(
       'Set-Cookie',
       cookie(
         'sapucaia_discord_session',
         sessionToken,
-        3600
+        30 * 24 * 60 * 60
       )
     );
 
+    /*
+     * Limpa o state usado no OAuth.
+     */
     headers.append(
       'Set-Cookie',
       cookie(
@@ -299,8 +318,10 @@ export default async (req) => {
   <meta charset="utf-8">
   <meta name="viewport"
         content="width=device-width,initial-scale=1">
+
   <meta http-equiv="Cache-Control"
         content="no-store">
+
   <title>Discord conectado</title>
 </head>
 
@@ -339,7 +360,9 @@ export default async (req) => {
         headers
       }
     );
+
   } catch (error) {
+
     console.error(
       'discord-callback error:',
       error?.stack ||
