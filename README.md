@@ -55,7 +55,7 @@ Essas integrações exigem backend/servidor seguro. Não coloque tokens, client 
 
 ## V2 — Painel ADM
 
-Abra `admin.html` para acessar o painel administrativo.
+Abra `admin.html` para acessar o painel administrativo..
 
 ### Login de demonstração
 
