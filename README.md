@@ -19,7 +19,7 @@ Projeto novo, independente e pronto para publicação no Netlify.
 - Botão de Discord preparado para OAuth
 - Responsivo para PC e celular
 - Partículas e efeitos de fundo leves
-- Nenhum pagamento real é inventado nesta versão
+- Nenhum pagamento real é inventado nesta versãoo
 
 ## Publicar no Netlify
 
