@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520">
+      <defs>
+        <linearGradient id="g" x1="0" x2="1"><stop stop-color="#11131a"/><stop offset="1" stop-color="#050509"/></linearGradient>
+        <radialGradient id="r"><stop stop-color="#ff0a88" stop-opacity=".42"/><stop offset="1" stop-color="#ff0a88" stop-opacity="0"/></radialGradient>
+      </defs>
+      <rect width="900" height="520" fill="url(#g)"/>
+      <circle cx="690" cy="180" r="260" fill="url(#r)"/>
+      <path d="M0 430 C220 360 380 455 570 390 S790 350 900 420 V520 H0Z" fill="#08080d"/>
+      <path d="M0 455 H900" stroke="#ff0a88" stroke-opacity=".2"/>
+      <text x="450" y="285" text-anchor="middle" font-size="150">🏠</text>
+      <text x="450" y="385" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="34" font-weight="800">Casa de Luxo</text>
+      <text x="450" y="425" text-anchor="middle" fill="#ff0a88" font-family="Arial,sans-serif" font-size="18" letter-spacing="5">SAPUCAIA • RIO DE JANEIRO</text>
+    </svg>
