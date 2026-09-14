@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 const CLIENT_ID = '1548925706522730566';
 
 const REDIRECT_URI =
-  'https://lojasapucaiarjofc.netlify.app/api/discord-callback';
+  'https://sapucaia-rj-lojaa-ofical.netlify.app/api/discord-callback';
 
 function cookie(name, value, maxAge) {
   return `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
