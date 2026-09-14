@@ -1,41 +1,47 @@
 import crypto from 'node:crypto';
 
-function read(req){
-  const raw=req.headers.get('cookie')||'';
-  const m=raw.match(/(?:^|;\s*)sapucaia_discord_session=([^;]+)/);
-  if(!m)return null;
+function readSession(req) {
+  const raw = req.headers.get('cookie') || '';
+  const m = raw.match(/(?:^|;\s*)sapucaia_discord_session=([^;]+)/);
+  if (!m) return null;
 
-  const token=decodeURIComponent(m[1]);
-  const [body,sig]=token.split('.');
-  if(!body||!sig)return null;
+  const token = decodeURIComponent(m[1]);
+  const dot = token.indexOf('.');
+  if (dot <= 0) return null;
 
-  const secret=String(process.env.DISCORD_SESSION_SECRET||'').trim();
-  if(!secret)return null;
+  const body = token.slice(0, dot);
+  const sig = token.slice(dot + 1);
+  const secret = String(process.env.DISCORD_SESSION_SECRET || '').trim();
+  if (!secret) return null;
 
-  const expected=crypto
-    .createHmac('sha256',secret)
+  const expected = crypto
+    .createHmac('sha256', secret)
     .update(body)
     .digest('base64url');
 
-  const aa=Buffer.from(sig);
-  const bb=Buffer.from(expected);
-  if(aa.length!==bb.length||!crypto.timingSafeEqual(aa,bb))return null;
+  const aa = Buffer.from(sig);
+  const bb = Buffer.from(expected);
+  if (aa.length !== bb.length || !crypto.timingSafeEqual(aa, bb)) return null;
 
-  try{
-    const data=JSON.parse(Buffer.from(body,'base64url').toString());
-    if(!data.exp||Date.now()>Number(data.exp))return null;
+  try {
+    const data = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
+    if (!data.exp || Date.now() >= Number(data.exp)) return null;
     return data;
-  }catch{
+  } catch {
     return null;
   }
 }
 
-export default async req=>{
-  const user=read(req);
-  return new Response(JSON.stringify({connected:!!user,user:user||null}),{
-    headers:{
-      'content-type':'application/json; charset=utf-8',
-      'cache-control':'no-store'
+export default async (req) => {
+  const user = readSession(req);
+  return new Response(JSON.stringify({
+    connected: Boolean(user),
+    user: user || null
+  }), {
+    status: 200,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store'
     }
   });
 };
