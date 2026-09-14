@@ -888,15 +888,152 @@ $('#copyCoupon')?.addEventListener(
   }
 );
 
+function saveCheckoutState(){
+  try{
+    const state={
+      step:Number(checkoutStep)||1,
+      method:checkoutMethod,
+
+      fields:{
+        country:
+          $('#checkoutCountry')?.value || '',
+
+        name:
+          $('#checkoutName')?.value || '',
+
+        email:
+          $('#checkoutEmail')?.value || '',
+
+        cpf:
+          $('#checkoutCpf')?.value || '',
+
+        phone:
+          $('#checkoutPhone')?.value || '',
+
+        recipientId:
+          $('#checkoutRecipientId')?.value || '',
+
+        recipientDiscord:
+          $('#checkoutRecipientDiscord')?.value || '',
+
+        termsAccepted:
+          $('#checkoutTerms')?.checked || false
+      }
+    };
+
+    sessionStorage.setItem(
+      'sapucaia_checkout_state',
+      JSON.stringify(state)
+    );
+
+  }catch{}
+}
+
+function getCheckoutState(){
+  try{
+
+    const raw=
+      sessionStorage.getItem(
+        'sapucaia_checkout_state'
+      );
+
+    return raw
+      ? JSON.parse(raw)
+      : null;
+
+  }catch{
+
+    return null;
+  }
+}
+
+function restoreCheckoutState(){
+
+  const state=
+    getCheckoutState();
+
+  if(!state)
+    return false;
+
+  const fields=
+    state.fields || {};
+
+  if($('#checkoutCountry'))
+    $('#checkoutCountry').value=
+      fields.country ||
+      $('#checkoutCountry').value;
+
+  if($('#checkoutName'))
+    $('#checkoutName').value=
+      fields.name || '';
+
+  if($('#checkoutEmail'))
+    $('#checkoutEmail').value=
+      fields.email || '';
+
+  if($('#checkoutCpf'))
+    $('#checkoutCpf').value=
+      fields.cpf || '';
+
+  if($('#checkoutPhone'))
+    $('#checkoutPhone').value=
+      fields.phone || '';
+
+  if($('#checkoutRecipientId'))
+    $('#checkoutRecipientId').value=
+      fields.recipientId || '';
+
+  if($('#checkoutRecipientDiscord'))
+    $('#checkoutRecipientDiscord').value=
+      fields.recipientDiscord || '';
+
+  if($('#checkoutTerms'))
+    $('#checkoutTerms').checked=
+      fields.termsAccepted===true;
+
+  if(state.method){
+
+    checkoutMethod=
+      state.method;
+
+    $$('.payment-option')
+      .forEach(
+        x=>
+          x.classList.toggle(
+            'active',
+            x.dataset.method===checkoutMethod
+          )
+      );
+  }
+
+  checkoutStep=
+    Number(state.step)||1;
+
+  return true;
+}
+
+function clearCheckoutState(){
+
+  try{
+
+    sessionStorage.removeItem(
+      'sapucaia_checkout_state'
+    );
+
+  }catch{}
+}
+
 function setCheckoutStep(step){
-  checkoutStep=step;
+
+  checkoutStep=
+    Number(step)||1;
 
   $$('.checkout-step')
     .forEach(
       x=>
         x.classList.toggle(
           'active',
-          Number(x.dataset.step)===step
+          Number(x.dataset.step)===checkoutStep
         )
     );
 
@@ -905,9 +1042,11 @@ function setCheckoutStep(step){
       x=>
         x.classList.toggle(
           'current',
-          Number(x.dataset.stepLabel)===step
+          Number(x.dataset.stepLabel)===checkoutStep
         )
     );
+
+  saveCheckoutState();
 }
 
 function openCheckout(){
@@ -1018,16 +1157,8 @@ function maskPhone(v){
  * =========================================================
  * DISCORD
  * =========================================================
- *
- * Consulta a sessão existente no servidor.
- *
- * buyerDiscord fica disponível para o checkout e contém:
- * - id
- * - username
- * - global_name
- * - email
- * - avatar
  */
+
 async function loadDiscordSession(){
 
   try{
@@ -1053,23 +1184,14 @@ async function loadDiscordSession(){
     buyerDiscord=null;
   }
 
-
-  /*
-   * Botões de login existentes na loja.
-   */
   const loginButtons=[
     $('#discordLogin'),
     $('#checkoutDiscordLogin')
   ].filter(Boolean);
 
-
   loginButtons.forEach(
     btn=>{
 
-      /*
-       * Usuário não conectado:
-       * mantém o botão original.
-       */
       if(!buyerDiscord){
 
         btn.innerHTML=
@@ -1085,18 +1207,10 @@ async function loadDiscordSession(){
         return;
       }
 
-
-      /*
-       * URL da foto do Discord.
-       *
-       * Se o usuário não tiver avatar personalizado,
-       * usamos o avatar padrão do Discord.
-       */
       const avatarUrl=
         buyerDiscord.avatar
           ? `https://cdn.discordapp.com/avatars/${encodeURIComponent(buyerDiscord.id)}/${encodeURIComponent(buyerDiscord.avatar)}.png?size=128`
           : `https://cdn.discordapp.com/embed/avatars/${Number(buyerDiscord.id||0)%5}.png`;
-
 
       const nome=
         esc(
@@ -1105,12 +1219,6 @@ async function loadDiscordSession(){
           'Usuário'
         );
 
-
-      /*
-       * Mostra:
-       *
-       * [ FOTO ] Conectado: Nome
-       */
       btn.innerHTML=`
         <span
           style="
@@ -1159,10 +1267,6 @@ async function loadDiscordSession(){
     }
   );
 
-
-  /*
-   * Texto de estado já existente no checkout.
-   */
   if($('#discordLoginState')){
 
     $('#discordLoginState')
@@ -1175,7 +1279,6 @@ async function loadDiscordSession(){
           : 'Não conectado';
   }
 }
-
 
 function validatePersonal(){
 
@@ -1268,9 +1371,6 @@ function checkoutPayload(){
 
   return{
 
-    /*
-     * Continua enviando todos os seus dados atuais.
-     */
     items:cart,
 
     couponCode:
@@ -1284,19 +1384,11 @@ function checkoutPayload(){
     paymentMethod:
       checkoutMethod,
 
-
-    /*
-     * Conta Discord conectada.
-     *
-     * Aqui continua o ID do usuário.
-     * O backend do checkout pode usar esse dado
-     * para associar a compra à conta.
-     */
     buyerDiscord:
       buyerDiscord,
 
-
     buyer:{
+
       country:
         $('#checkoutCountry').value,
 
@@ -1318,6 +1410,7 @@ function checkoutPayload(){
     },
 
     personal:{
+
       country:
         $('#checkoutCountry').value,
 
@@ -1339,6 +1432,7 @@ function checkoutPayload(){
     },
 
     delivery:{
+
       recipientId:
         $('#checkoutRecipientId')
           .value
@@ -1509,6 +1603,7 @@ function renderPixPayment(d){
         <div class="pay-summary">
 
           <div>
+
             <span>
               Pedido
             </span>
@@ -1516,9 +1611,11 @@ function renderPixPayment(d){
             <span>
               #${esc(d.orderId)}
             </span>
+
           </div>
 
           <div>
+
             <span>
               Total
             </span>
@@ -1526,6 +1623,7 @@ function renderPixPayment(d){
             <strong>
               ${money(d.amount)}
             </strong>
+
           </div>
 
         </div>
@@ -1779,24 +1877,82 @@ $$('.payment-option').forEach(
 
       checkoutMethod=
         b.dataset.method;
+
+      saveCheckoutState();
     }
 );
 
 
 /*
  * =========================================================
- * LOGIN DISCORD
+ * TERMOS DE USO
  * =========================================================
  *
- * Se não estiver conectado:
- *   abre o OAuth normalmente.
- *
- * Se já estiver conectado:
- *   não abre outro login.
+ * Antes de sair do checkout, salvamos:
+ * - etapa atual
+ * - método de pagamento
+ * - dados pessoais
+ * - destinatário
+ * - aceite dos termos
  */
+$('#checkoutTermsLink')?.addEventListener(
+  'click',
+  e=>{
+
+    e.preventDefault();
+
+    saveCheckoutState();
+
+    const target=
+      $('#checkoutTermsLink')?.getAttribute('href') ||
+      'terms.html';
+
+    location.href=target;
+  }
+);
+
+
+/*
+ * Salva os campos enquanto o cliente preenche.
+ * Assim, mesmo que vá aos termos depois de preencher
+ * apenas parte do formulário, os dados continuam salvos.
+ */
+[
+  'checkoutCountry',
+  'checkoutName',
+  'checkoutEmail',
+  'checkoutCpf',
+  'checkoutPhone',
+  'checkoutRecipientId',
+  'checkoutRecipientDiscord',
+  'checkoutTerms'
+].forEach(id=>{
+
+  const el=
+    $('#'+id);
+
+  el?.addEventListener(
+    'input',
+    saveCheckoutState
+  );
+
+  el?.addEventListener(
+    'change',
+    saveCheckoutState
+  );
+});
+
+
+/*
+ * =========================================================
+ * LOGIN DISCORD
+ * =========================================================
+ */
+
 $('#checkoutDiscordLogin')?.addEventListener(
   'click',
   ()=>{
+
     if(buyerDiscord)
       return;
 
@@ -1808,6 +1964,7 @@ $('#checkoutDiscordLogin')?.addEventListener(
 $('#discordLogin')?.addEventListener(
   'click',
   ()=>{
+
     if(buyerDiscord)
       return;
 
@@ -1819,6 +1976,7 @@ $('#discordLogin')?.addEventListener(
 $('#discordSupport')?.addEventListener(
   'click',
   ()=>{
+
     const u=
       storeSettings.discordUrl;
 
@@ -1841,6 +1999,7 @@ $('#discordBtn')?.addEventListener(
 $('#contactBtn')?.addEventListener(
   'click',
   ()=>{
+
     storeSettings.supportUrl
       ? location.href=
           storeSettings.supportUrl
@@ -1853,7 +2012,9 @@ $('#contactBtn')?.addEventListener(
 $('#faqBtn')?.addEventListener(
   'click',
   ()=>{
-    const f=$('#faq');
+
+    const f=
+      $('#faq');
 
     if(f)
       f.classList.toggle(
@@ -2522,9 +2683,66 @@ if(
 
 
 /*
+ * =========================================================
+ * RESTAURA O CHECKOUT APÓS VOLTAR DOS TERMOS
+ * =========================================================
+ */
+
+const termsReturn=
+  new URLSearchParams(
+    location.search
+  ).get('termsReturn');
+
+if(termsReturn==='1'){
+
+  const state=
+    getCheckoutState();
+
+  if(state){
+
+    requestAnimationFrame(()=>{
+
+      const modal=
+        $('#checkoutModal');
+
+      if(modal){
+
+        modal.classList.add(
+          'open'
+        );
+
+        modal.setAttribute(
+          'aria-hidden',
+          'false'
+        );
+      }
+
+      restoreCheckoutState();
+
+      setCheckoutStep(
+        checkoutStep
+      );
+
+      loadDiscordSession();
+
+      const cleanUrl=
+        `${location.pathname}${location.hash || ''}`;
+
+      history.replaceState(
+        {},
+        document.title,
+        cleanUrl
+      );
+    });
+  }
+}
+
+
+/*
  * Clique em um elemento editável dentro
  * da prévia para solicitar foco ao ADM.
  */
+
 if(previewMode){
 
   document.addEventListener(
@@ -2584,4 +2802,5 @@ if(previewMode){
  * Isso faz com que a conta seja reconhecida mesmo
  * depois de recarregar a página.
  */
+
 loadDiscordSession();
