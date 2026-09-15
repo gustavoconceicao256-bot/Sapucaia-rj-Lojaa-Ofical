@@ -483,3 +483,27 @@
     right:10px;
   }
 }
+
+/* CORREÇÃO DO WRAPPER DO MODAL DE PRODUTO */
+#productModal > .modal.product-modal{
+  width:min(1080px,100%);
+  max-width:1080px;
+  max-height:none;
+  height:auto;
+  overflow:visible;
+  margin:3vh auto;
+  padding:0;
+  background:transparent;
+  border:none;
+  box-shadow:none;
+}
+
+#productModal > .modal.product-modal > .modal-close{
+  display:none;
+}
+
+#productModal #productDetail{
+  width:100%;
+  max-width:none;
+  margin:0;
+}
