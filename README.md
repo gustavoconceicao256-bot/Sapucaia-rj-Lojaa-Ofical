@@ -10,7 +10,7 @@ Projeto novo, independente e pronto para publicação no Netlify.
 - Menu e categorias funcionais
 - Produtos por categoriaa
 - Cards com hover, selos e descontooo
-- Modal de detalhes do produto
+- Modal de detalhes do produtoo
 - Carrinho com quantidade, remoção e subtotal
 - Cupom `SAPUCAIA50` aplicando 50% OFF no frontend
 - Persistência do carrinho no `localStorage`
