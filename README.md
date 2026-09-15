@@ -47,7 +47,7 @@ Essas integrações exigem backend/servidor seguro. Não coloque tokens, client 
 
 - `index.html` — estrutura da loja
 - `style.css` — identidade visual, responsividade e animações
-- `script.js` — produtos, categorias, modal, carrinho e cupom
+- `script.js` — produtos, categorias, modal, carrinho e cupoom
 - `assets/banner-sapucaia.png` — banner original enviado
 - `assets/*.svg` — artes locais dos produtos de demonstração
 - `netlify.toml` — configuração simples para Netlify
