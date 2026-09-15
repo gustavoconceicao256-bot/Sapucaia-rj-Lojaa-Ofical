@@ -765,6 +765,17 @@ function openProduct(id){
 
         <main class="product-detail-main">
 
+          <div class="product-detail-visual">
+            <img
+              src="${esc(p.img||'assets/banner-sapucaia.png')}"
+              alt="${esc(p.name)}"
+              onerror="this.src='assets/banner-sapucaia.png'"
+            >
+            <span class="product-detail-visual-tag">
+              ${esc(p.cat||'PRODUTO')}
+            </span>
+          </div>
+
           <header class="product-detail-heading">
 
             <div class="product-detail-title">
@@ -2463,6 +2474,11 @@ function applySettings(s){
     $('.hero-banner img');
 
   if(banner){
+
+    banner.onerror=()=>{
+      banner.onerror=null;
+      banner.src='assets/banner-sapucaia.png';
+    };
 
     banner.src=
       storeSettings.banner||
