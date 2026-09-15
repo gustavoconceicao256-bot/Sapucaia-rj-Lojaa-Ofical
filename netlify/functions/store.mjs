@@ -686,6 +686,59 @@ export default async function handler(req) {
 
     /*
      * ==========================
+     * SETTINGS ADMIN
+     * ==========================
+     *
+     * O painel administrativo usa este
+     * recurso para publicar as alterações
+     * visuais. Aceitamos { settings: {...} }
+     * e também um objeto direto para manter
+     * compatibilidade com versões anteriores.
+     */
+    if (
+      resource === 'settings-admin'
+    ) {
+      const body =
+        await req.json().catch(
+          () => ({})
+        );
+
+      const incoming =
+        body &&
+        body.settings &&
+        typeof body.settings === 'object' &&
+        !Array.isArray(body.settings)
+          ? body.settings
+          : (
+              body &&
+              typeof body === 'object' &&
+              !Array.isArray(body)
+                ? body
+                : {}
+            );
+
+      const current =
+        await getSettings();
+
+      const next = {
+        ...current,
+        ...incoming
+      };
+
+      await putJSON(
+        'sapucaia-config',
+        'settings',
+        next
+      );
+
+      return json({
+        ok: true,
+        settings: next
+      });
+    }
+
+    /*
+     * ==========================
      * PRODUCTS
      * ==========================
      */
@@ -835,9 +888,16 @@ export default async function handler(req) {
       const incoming =
         body.settings &&
         typeof body.settings ===
-          'object'
+          'object' &&
+        !Array.isArray(body.settings)
           ? body.settings
-          : {};
+          : (
+              body &&
+              typeof body === 'object' &&
+              !Array.isArray(body)
+                ? body
+                : {}
+            );
 
       const next = {
         ...current,
