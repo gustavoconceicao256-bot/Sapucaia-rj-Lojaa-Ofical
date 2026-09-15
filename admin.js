@@ -1034,9 +1034,9 @@ async function saveSettings(
           'content-type':
             'application/json'
         },
-        body: JSON.stringify(
+        body: JSON.stringify({
           settings
-        )
+        })
       }
     );
 
