@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-const CLIENT_ID = '1548925706522730566';
+const CLIENT_ID = '1548916664895144046';
 
 const REDIRECT_URI =
   'https://wondrous-sunshine-514b38.netlify.app/api/discord-callback';
