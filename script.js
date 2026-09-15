@@ -28,11 +28,15 @@ function marqueePhrase(){
 function buildInfiniteMarquee(){
   const track=$('.marquee-track');
   if(!track)return;
+
   const groups=[...track.querySelectorAll('.marquee-group')];
   if(groups.length<2)return;
+
   const phrase=marqueePhrase();
+
   for(const group of groups){
     group.innerHTML='';
+
     for(let i=0;i<8;i++){
       const copy=document.createElement('span');
       copy.className='marquee-copy';
@@ -40,14 +44,17 @@ function buildInfiniteMarquee(){
       group.appendChild(copy);
     }
   }
-  const first=groups[0];
-  const second=groups[1];
 
-  // A sequência é exatamente duplicada.
-  // O track desloca exatamente a largura do primeiro grupo.
+  const first=groups[0];
+
   requestAnimationFrame(()=>{
     const w=first.getBoundingClientRect().width;
-    track.style.setProperty('--marquee-distance',`${w}px`);
+
+    track.style.setProperty(
+      '--marquee-distance',
+      `${w}px`
+    );
+
     track.style.width=`${w*2}px`;
   });
 }
@@ -85,7 +92,7 @@ function loadCart(){
     cart=Array.isArray(raw)
       ? raw
         .filter(
-          x =>
+          x=>
             x &&
             x.id &&
             Number.isInteger(Number(x.qty)) &&
@@ -294,9 +301,11 @@ function renderProducts(){
               alt="${esc(p.name)}"
             >
 
-            <span class="tag">
-              ${esc(p.tag||'')}
-            </span>
+            ${
+              p.tag
+                ? `<span class="tag">${esc(p.tag)}</span>`
+                : ''
+            }
           </div>
 
           <div class="product-body">
@@ -608,6 +617,23 @@ function renderCart(){
   updateCount();
 }
 
+
+/*
+ * =========================================================
+ * MODAL DO PRODUTO
+ * =========================================================
+ *
+ * Imagem de capa:
+ * - aparece somente no card da loja
+ * - NÃO aparece neste modal
+ *
+ * Imagem da descrição 1:
+ * - aparece no modal
+ *
+ * Imagem da descrição 2:
+ * - aparece no modal
+ */
+
 function openProduct(id){
 
   const p=
@@ -617,14 +643,17 @@ function openProduct(id){
 
   if(!p)return;
 
-  const images=[
-    p.img,
-    ...(Array.isArray(p.images)?p.images:[])
-  ]
-    .filter(Boolean)
-    .filter(
-      (v,i,a)=>a.indexOf(v)===i
-    );
+  const descImage1=
+    String(
+      p.descImage1||
+      ''
+    ).trim();
+
+  const descImage2=
+    String(
+      p.descImage2||
+      ''
+    ).trim();
 
   const valid=
     p.valid||
@@ -636,101 +665,248 @@ function openProduct(id){
           : 'Permanente'
     );
 
-  const gallery=
-    images
-      .map(
-        (im,i)=>`
-          <button
-            class="detail-thumb ${i===0?'active':''}"
-            data-img="${esc(im)}"
-          >
-            <img
-              src="${esc(im)}"
-              alt=""
-            >
-          </button>
-        `
-      )
-      .join('');
+  const desc=
+    String(
+      p.desc||
+      'Nenhuma descrição adicional cadastrada.'
+    ).trim();
 
-  $('#productDetail').innerHTML=`
-    <div class="detail">
+  const faq=Array.isArray(p.faq)
+    ? p.faq
+    : [];
 
-      <div class="detail-media">
+  const descriptionImages=
+    [
+      descImage1,
+      descImage2
+    ].filter(Boolean);
 
-        <img
-          id="detailMainImage"
-          src="${esc(images[0])}"
-          alt="${esc(p.name)}"
-        >
+  const imageHtml=
+    descriptionImages.length
+      ? `
+        <div class="product-description-images">
 
-        <div class="detail-gallery">
-          ${gallery}
-        </div>
-
-      </div>
-
-      <div class="detail-info">
-
-        <p class="eyebrow">
-          ${esc(p.cat||'PRODUTO')}
-        </p>
-
-        <h2>
-          ${esc(p.name)}
-        </h2>
-
-        <div class="price-row">
-
-          ${
-            Number(p.old)>Number(p.price)
-              ? `<span class="old">${money(p.old)}</span>`
-              : ''
-          }
-
-          <span class="price">
-            ${money(p.price)}
-          </span>
+          ${descriptionImages.map((im,i)=>`
+            <div class="description-image">
+              <img
+                src="${esc(im)}"
+                alt="Imagem da descrição ${i+1}"
+                loading="lazy"
+              >
+            </div>
+          `).join('')}
 
         </div>
+      `
+      : '';
 
-        <div class="detail-content">
+  const faqHtml=
+    faq.length
+      ? `
+        <div class="product-faq">
 
           <h4>
-            Informações
+            Dúvidas frequentes
           </h4>
 
-          <p>
-            ${esc(
-              p.desc||
-              'Nenhuma descrição adicional cadastrada.'
-            )}
-          </p>
+          ${faq.map(item=>`
+            <details>
+              <summary>
+                ${esc(item.question||item.q||'Dúvida')}
+              </summary>
 
-          <ul>
+              <p>
+                ${esc(item.answer||item.a||'')}
+              </p>
+            </details>
+          `).join('')}
 
-            <li>
-              Validade: ${esc(valid)}
-            </li>
+        </div>
+      `
+      : '';
 
-            <li>
-              Entrega para o Passaporte informado no checkout
-            </li>
+  const discordConnected=
+    buyerDiscord
+      ? `
+        <div class="product-discord connected">
 
-            <li>
-              Pagamento confirmado pelo gateway antes da entrega
-            </li>
+          <div class="product-discord-user">
 
-          </ul>
+            <img
+              src="${
+                buyerDiscord.avatar
+                  ? `https://cdn.discordapp.com/avatars/${encodeURIComponent(buyerDiscord.id)}/${encodeURIComponent(buyerDiscord.avatar)}.png?size=128`
+                  : `https://cdn.discordapp.com/embed/avatars/${Number(buyerDiscord.id||0)%5}.png`
+              }"
+              alt=""
+            >
+
+            <div>
+              <small>DISCORD CONECTADO</small>
+              <strong>
+                ${esc(
+                  String(
+                    buyerDiscord.global_name||
+                    buyerDiscord.username||
+                    'Usuário'
+                  ).split(/\s+/)[0]
+                )}
+              </strong>
+            </div>
+
+          </div>
+
+        </div>
+      `
+      : `
+        <button
+          class="product-discord"
+          id="productDiscordLogin"
+          type="button"
+        >
+
+          <span class="product-discord-icon">
+            ◉
+          </span>
+
+          <span>
+            <small>VINCULE SUA CONTA</small>
+            <strong>Entrar com Discord</strong>
+          </span>
+
+          <b>→</b>
+
+        </button>
+      `;
+
+  $('#productDetail').innerHTML=`
+
+    <div class="product-detail-shell">
+
+      <button
+        class="product-detail-close"
+        id="productDetailClose"
+        type="button"
+        aria-label="Fechar"
+      >
+        ×
+      </button>
+
+      <div class="product-detail-content">
+
+        <div class="product-detail-main">
+
+          <div class="product-detail-heading">
+
+            <div>
+
+              <p class="eyebrow">
+                ${esc(p.cat||'PRODUTO')}
+              </p>
+
+              <h2>
+                ${esc(p.name)}
+              </h2>
+
+            </div>
+
+            <div class="product-detail-price">
+
+              ${
+                Number(p.old)>Number(p.price)
+                  ? `<span class="old">${money(p.old)}</span>`
+                  : ''
+              }
+
+              <strong>
+                ${money(p.price)}
+              </strong>
+
+            </div>
+
+          </div>
+
+          <section class="product-detail-section">
+
+            <h4>Detalhes:</h4>
+
+            <ul class="product-detail-list">
+
+              <li>
+                Validade:
+                <b>${esc(valid)}</b>
+              </li>
+
+              <li>
+                Entrega:
+                <b>Passaporte informado no checkout</b>
+              </li>
+
+              <li>
+                Pagamento:
+                <b>Confirmado antes da entrega</b>
+              </li>
+
+            </ul>
+
+          </section>
+
+          ${imageHtml}
+
+          <section class="product-detail-section product-description">
+
+            <h4>Descrição</h4>
+
+            <p>
+              ${esc(desc).replace(/\n/g,'<br>')}
+            </p>
+
+          </section>
+
+          ${faqHtml}
 
         </div>
 
-        <button
-          class="primary-btn"
-          id="detailBuy"
-        >
-          Adicionar ao carrinho
-        </button>
+        <aside class="product-detail-side">
+
+          ${discordConnected}
+
+          <div class="product-recipient">
+
+            <label for="productRecipientId">
+              ID / Passaporte
+            </label>
+
+            <input
+              id="productRecipientId"
+              inputmode="numeric"
+              maxlength="12"
+              placeholder="Digite o Passaporte"
+            >
+
+            <small>
+              O produto será enviado para este destinatário.
+            </small>
+
+          </div>
+
+          <button
+            class="primary-btn product-detail-buy"
+            id="detailBuy"
+            type="button"
+          >
+            🛒 Adicionar ao carrinho
+          </button>
+
+          <button
+            class="product-gift-btn"
+            id="detailGift"
+            type="button"
+          >
+            🎁 Presentear alguém
+          </button>
+
+        </aside>
 
       </div>
 
@@ -739,31 +915,115 @@ function openProduct(id){
 
   $('#productModal').classList.add('open');
 
-  $('#detailBuy').onclick=()=>{
-    addToCart(id);
-
-    $('#productModal')
-      .classList
-      .remove('open');
-
-    openCart();
-  };
-
-  $$('.detail-thumb').forEach(
-    b=>
-      b.onclick=()=>{
-        $('#detailMainImage').src=
-          b.dataset.img;
-
-        $$('.detail-thumb')
-          .forEach(
-            x=>x.classList.remove('active')
-          );
-
-        b.classList.add('active');
-      }
+  $('#productDetailClose')?.addEventListener(
+    'click',
+    ()=>{
+      $('#productModal')
+        .classList
+        .remove('open');
+    }
   );
+
+  $('#productDiscordLogin')?.addEventListener(
+    'click',
+    ()=>{
+      location.href='/api/discord-start';
+    }
+  );
+
+  $('#detailBuy')?.addEventListener(
+    'click',
+    ()=>{
+
+      const recipient=
+        $('#productRecipientId')
+          ?.value
+          .trim()||
+        '';
+
+      if(!/^\d{1,12}$/.test(recipient)){
+
+        toast(
+          'Informe o ID/Passaporte do destinatário.'
+        );
+
+        $('#productRecipientId')?.focus();
+
+        return;
+      }
+
+      addToCart(id);
+
+      try{
+        sessionStorage.setItem(
+          'sapucaia_recipient_id',
+          recipient
+        );
+      }catch{}
+
+      $('#productModal')
+        .classList
+        .remove('open');
+
+      openCart();
+    }
+  );
+
+  $('#detailGift')?.addEventListener(
+    'click',
+    ()=>{
+
+      const recipient=
+        $('#productRecipientId')
+          ?.value
+          .trim()||
+        '';
+
+      if(!/^\d{1,12}$/.test(recipient)){
+
+        toast(
+          'Informe o ID/Passaporte para presentear.'
+        );
+
+        $('#productRecipientId')?.focus();
+
+        return;
+      }
+
+      addToCart(id);
+
+      try{
+        sessionStorage.setItem(
+          'sapucaia_recipient_id',
+          recipient
+        );
+
+        sessionStorage.setItem(
+          'sapucaia_gift_mode',
+          '1'
+        );
+      }catch{}
+
+      $('#productModal')
+        .classList
+        .remove('open');
+
+      openCart();
+    }
+  );
+
+  $('#productRecipientId')?.addEventListener(
+    'input',
+    e=>{
+      e.target.value=
+        digits(e.target.value).slice(0,12);
+    }
+  );
+
+  if(buyerDiscord)
+    loadDiscordSession();
 }
+
 
 function openCart(){
   $('#cartBackdrop').classList.add('open');
@@ -1214,9 +1474,11 @@ async function loadDiscordSession(){
 
       const nome=
         esc(
-          buyerDiscord.global_name ||
-          buyerDiscord.username ||
-          'Usuário'
+          String(
+            buyerDiscord.global_name||
+            buyerDiscord.username||
+            'Usuário'
+          ).split(/\s+/)[0]
         );
 
       btn.innerHTML=`
@@ -1258,8 +1520,8 @@ async function loadDiscordSession(){
       `;
 
       btn.title=
-        buyerDiscord.global_name ||
-        buyerDiscord.username ||
+        buyerDiscord.global_name||
+        buyerDiscord.username||
         'Discord conectado';
 
       btn.dataset.discordConnected=
@@ -1273,8 +1535,10 @@ async function loadDiscordSession(){
       .textContent=
         buyerDiscord
           ? `Conectado: ${
-              buyerDiscord.global_name ||
-              buyerDiscord.username
+              String(
+                buyerDiscord.global_name||
+                buyerDiscord.username
+              ).split(/\s+/)[0]
             }`
           : 'Não conectado';
   }
@@ -1369,6 +1633,26 @@ function validateDelivery(){
 
 function checkoutPayload(){
 
+  let recipientId=
+    $('#checkoutRecipientId')
+      .value
+      .trim();
+
+  try{
+
+    const modalRecipient=
+      sessionStorage.getItem(
+        'sapucaia_recipient_id'
+      );
+
+    if(
+      modalRecipient &&
+      /^\d{1,12}$/.test(modalRecipient)
+    )
+      recipientId=modalRecipient;
+
+  }catch{}
+
   return{
 
     items:cart,
@@ -1433,10 +1717,7 @@ function checkoutPayload(){
 
     delivery:{
 
-      recipientId:
-        $('#checkoutRecipientId')
-          .value
-          .trim(),
+      recipientId,
 
       recipientDiscord:
         $('#checkoutRecipientDiscord')
@@ -1887,14 +2168,8 @@ $$('.payment-option').forEach(
  * =========================================================
  * TERMOS DE USO
  * =========================================================
- *
- * Antes de sair do checkout, salvamos:
- * - etapa atual
- * - método de pagamento
- * - dados pessoais
- * - destinatário
- * - aceite dos termos
  */
+
 $('#checkoutTermsLink')?.addEventListener(
   'click',
   e=>{
@@ -1904,19 +2179,13 @@ $('#checkoutTermsLink')?.addEventListener(
     saveCheckoutState();
 
     const target=
-      $('#checkoutTermsLink')?.getAttribute('href') ||
+      $('#checkoutTermsLink')?.getAttribute('href')||
       'terms.html';
 
     location.href=target;
   }
 );
 
-
-/*
- * Salva os campos enquanto o cliente preenche.
- * Assim, mesmo que vá aos termos depois de preencher
- * apenas parte do formulário, os dados continuam salvos.
- */
 [
   'checkoutCountry',
   'checkoutName',
@@ -1952,7 +2221,6 @@ $('#checkoutTermsLink')?.addEventListener(
 $('#checkoutDiscordLogin')?.addEventListener(
   'click',
   ()=>{
-
     if(buyerDiscord)
       return;
 
@@ -1964,7 +2232,6 @@ $('#checkoutDiscordLogin')?.addEventListener(
 $('#discordLogin')?.addEventListener(
   'click',
   ()=>{
-
     if(buyerDiscord)
       return;
 
@@ -2050,7 +2317,7 @@ function applySettings(s){
   const num=
     (key,fallback)=>
       Number(
-        storeSettings[key] ??
+        storeSettings[key]??
         fallback
       );
 
@@ -2277,7 +2544,7 @@ function applySettings(s){
     '--bg-image',
     `url("${String(
       storeSettings.backgroundImage||''
-    ).replace(/"/g,'\"')}")`
+    ).replace(/"/g,'\\"')}")`
   );
 
   document.body.dataset.bannerEffect=
@@ -2726,7 +2993,7 @@ if(termsReturn==='1'){
       loadDiscordSession();
 
       const cleanUrl=
-        `${location.pathname}${location.hash || ''}`;
+        `${location.pathname}${location.hash||''}`;
 
       history.replaceState(
         {},
@@ -2798,9 +3065,6 @@ if(previewMode){
  * =========================================================
  * RESTAURA A SESSÃO DISCORD AO ABRIR A LOJA
  * =========================================================
- *
- * Isso faz com que a conta seja reconhecida mesmo
- * depois de recarregar a página.
  */
 
 loadDiscordSession();
