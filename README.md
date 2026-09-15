@@ -8,7 +8,7 @@ Projeto novo, independente e pronto para publicação no Netlify.
 - Animação suave de zoom e brilho no banner sem deformar a arte
 - Identidade preta + rosa neon
 - Menu e categorias funcionais
-- Produtos por categoria
+- Produtos por categoriaa
 - Cards com hover, selos e descontooo
 - Modal de detalhes do produto
 - Carrinho com quantidade, remoção e subtotal
