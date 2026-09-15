@@ -95,7 +95,7 @@ const state = {
   orders: [],
   customers: [],
   settings: {},
-  draft: structuredClone(DEFAULT_APPEARANCE),
+ draft: clone(DEFAULT_APPEARANCE),
 
   history: [],
   historyIndex: -1,
