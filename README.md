@@ -12,7 +12,7 @@ Projeto novo, independente e pronto para publicação no Netlify.
 - Cards com hover, selos e desconto
 - Modal de detalhes do produto
 - Carrinho com quantidade, remoção e subtotal
-- Cupom `SAPUCAIA50` aplicando 50% OFF no frontendd
+- Cupom `SAPUCAIA50` aplicando 50% OFF no frontend
 - Persistência do carrinho no `localStorage`
 - Área de suporte e FAQ
 - Área de pedidos preparada para backend
