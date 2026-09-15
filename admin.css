@@ -9,9 +9,12 @@
   --line:rgba(255,255,255,.08);
 }
 
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box
+}
 
-html,body{
+html,
+body{
   margin:0;
   min-height:100%;
   background:var(--bg);
@@ -19,8 +22,13 @@ html,body{
   font-family:Inter,Arial,sans-serif
 }
 
-body{overflow-x:hidden}
-.hidden{display:none!important}
+body{
+  overflow-x:hidden
+}
+
+.hidden{
+  display:none!important
+}
 
 .bg-grid{
   position:fixed;
@@ -42,8 +50,17 @@ body{overflow-x:hidden}
   pointer-events:none
 }
 
-.glow-a{background:var(--pink);top:-140px;left:-120px}
-.glow-b{background:#7b1fff;right:-160px;bottom:-120px}
+.glow-a{
+  background:var(--pink);
+  top:-140px;
+  left:-120px
+}
+
+.glow-b{
+  background:#7b1fff;
+  right:-160px;
+  bottom:-120px
+}
 
 .login-screen{
   min-height:100vh;
@@ -74,7 +91,9 @@ body{overflow-x:hidden}
   font-size:34px
 }
 
-.login-box h1 span{color:var(--pink)}
+.login-box h1 span{
+  color:var(--pink)
+}
 
 label{
   display:flex;
@@ -85,7 +104,9 @@ label{
   margin:11px 0
 }
 
-input,select,textarea{
+input,
+select,
+textarea{
   width:100%;
   background:#0b0b10;
   border:1px solid rgba(255,255,255,.09);
@@ -97,7 +118,15 @@ input,select,textarea{
   transition:.2s
 }
 
-input:focus,select:focus,textarea:focus{
+textarea{
+  resize:vertical;
+  min-height:100px;
+  line-height:1.5
+}
+
+input:focus,
+select:focus,
+textarea:focus{
   border-color:rgba(255,8,127,.7);
   box-shadow:0 0 0 3px rgba(255,8,127,.12)
 }
@@ -106,6 +135,12 @@ button{
   font:inherit;
   color:inherit;
   cursor:pointer
+}
+
+button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none!important
 }
 
 .pink-btn{
@@ -125,10 +160,16 @@ button{
 
 .pink-btn.wide{
   width:100%;
-  margin-top:18px
+  margin-top:0
 }
 
-.ghost,.view-btn,.editor-tab,.focus-btn,.logout,.icon-btn,.danger-btn{
+.ghost,
+.view-btn,
+.editor-tab,
+.focus-btn,
+.logout,
+.icon-btn,
+.danger-btn{
   background:#0d0d13;
   border:1px solid var(--line);
   padding:10px 12px;
@@ -136,7 +177,11 @@ button{
   transition:.2s
 }
 
-.ghost:hover,.view-btn:hover,.editor-tab:hover,.focus-btn:hover,.icon-btn:hover{
+.ghost:hover,
+.view-btn:hover,
+.editor-tab:hover,
+.focus-btn:hover,
+.icon-btn:hover{
   border-color:rgba(255,8,127,.3);
   transform:translateY(-1px)
 }
@@ -212,7 +257,8 @@ button{
   align-items:center
 }
 
-.side-link:hover,.side-link.active{
+.side-link:hover,
+.side-link.active{
   background:linear-gradient(90deg,rgba(255,8,127,.12),transparent);
   border-color:rgba(255,8,127,.18);
   color:#fff
@@ -262,7 +308,9 @@ button{
   font-size:12px
 }
 
-.top-right button{display:none}
+.top-right button{
+  display:none
+}
 
 .stats{
   display:grid;
@@ -270,13 +318,16 @@ button{
   gap:14px
 }
 
-.stat,.panel{
+.stat,
+.panel{
   background:rgba(15,15,21,.83);
   border:1px solid var(--line);
   border-radius:18px
 }
 
-.stat{padding:18px}
+.stat{
+  padding:18px
+}
 
 .stat span{
   font-size:10px;
@@ -290,7 +341,9 @@ button{
   margin:7px 0
 }
 
-.stat em,.muted,small{
+.stat em,
+.muted,
+small{
   color:var(--muted);
   font-size:10px
 }
@@ -302,24 +355,38 @@ button{
   margin-top:14px
 }
 
-.panel{padding:18px}
+.panel{
+  padding:18px
+}
 
-.panel-head,.toolbar,.toolbar-actions,.preview-head,.preview-footer,.preview-actions{
+.panel-head,
+.toolbar,
+.toolbar-actions,
+.preview-head,
+.preview-footer,
+.preview-actions{
   display:flex;
   justify-content:space-between;
   align-items:center;
   gap:12px
 }
 
-.toolbar{margin-bottom:15px}
-.toolbar h3{margin:3px 0}
+.toolbar{
+  margin-bottom:15px
+}
+
+.toolbar h3{
+  margin:3px 0
+}
 
 .toolbar-actions{
   justify-content:flex-end;
   flex-wrap:wrap
 }
 
-.table-wrap{overflow:auto}
+.table-wrap{
+  overflow:auto
+}
 
 .data-table{
   width:100%;
@@ -327,7 +394,8 @@ button{
   font-size:11px
 }
 
-.data-table th,.data-table td{
+.data-table th,
+.data-table td{
   padding:12px 9px;
   border-bottom:1px solid rgba(255,255,255,.06);
   text-align:left;
@@ -354,6 +422,27 @@ button{
   background:#111
 }
 
+.product-state{
+  display:inline-flex;
+  gap:5px;
+  align-items:center;
+  font-size:9px;
+  padding:5px 7px;
+  border-radius:7px;
+  background:rgba(255,255,255,.04);
+  color:#aaa
+}
+
+.product-state.active{
+  color:#8cffb5;
+  background:rgba(80,255,145,.08)
+}
+
+.product-state.featured{
+  color:#ff77b7;
+  background:rgba(255,8,127,.09)
+}
+
 .action{
   background:#0d0d12;
   border:1px solid var(--line);
@@ -362,7 +451,9 @@ button{
   margin-right:6px
 }
 
-.danger{color:#ff789f}
+.danger{
+  color:#ff789f
+}
 
 .filters{
   display:grid;
@@ -371,8 +462,13 @@ button{
   margin-bottom:12px
 }
 
-.page{display:none}
-.page.active-page{display:block}
+.page{
+  display:none
+}
+
+.page.active-page{
+  display:block
+}
 
 .cat-row{
   display:grid;
@@ -403,7 +499,9 @@ button{
   gap:8px
 }
 
-.form-panel label.full{grid-column:1/-1}
+.form-panel label.full{
+  grid-column:1/-1
+}
 
 .notice{
   grid-column:1/-1;
@@ -423,7 +521,8 @@ button{
   align-items:start
 }
 
-.editor-panel,.preview-panel{
+.editor-panel,
+.preview-panel{
   background:rgba(12,12,17,.86);
   border:1px solid var(--line);
   border-radius:20px;
@@ -456,7 +555,9 @@ button{
   overflow:auto
 }
 
-.editor-section.active{display:block}
+.editor-section.active{
+  display:block
+}
 
 .section-title{
   display:flex;
@@ -465,7 +566,9 @@ button{
   margin-bottom:11px
 }
 
-.section-title b{font-size:15px}
+.section-title b{
+  font-size:15px
+}
 
 .section-title span{
   font-size:10px;
@@ -594,16 +697,18 @@ button{
   z-index:20
 }
 
-.modal-backdrop.open{display:grid}
+.modal-backdrop.open{
+  display:grid
+}
 
 .modal{
-  width:min(880px,100%);
+  width:min(900px,100%);
   max-height:92vh;
   overflow:auto;
   background:#101016;
   border:1px solid var(--line);
   border-radius:22px;
-  padding:22px;
+  padding:24px;
   position:relative;
   box-shadow:0 30px 80px rgba(0,0,0,.55)
 }
@@ -618,14 +723,50 @@ button{
   color:#aaa
 }
 
+.close:hover{
+  color:#fff
+}
+
+.modal-heading{
+  padding-right:40px;
+  margin-bottom:16px
+}
+
+.modal-heading h3{
+  margin:3px 0 5px;
+  font-size:25px
+}
+
+.modal-heading span{
+  color:var(--muted);
+  font-size:10px
+}
+
 .product-editor-modal .form-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:5px
+  gap:5px 10px
 }
 
 .product-editor-modal label.full{
   grid-column:1/-1
+}
+
+.image-field{
+  padding:10px;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.018);
+  border-radius:13px
+}
+
+.image-field label{
+  margin:6px 0
+}
+
+.image-field small{
+  display:block;
+  margin-top:2px;
+  color:#777
 }
 
 .product-actions{
@@ -635,8 +776,12 @@ button{
   margin-top:18px
 }
 
-.product-actions .pink-btn.wide{
-  margin-top:0
+.product-actions .pink-btn{
+  min-height:45px
+}
+
+.product-actions .ghost{
+  min-height:45px
 }
 
 .coupon-preview{
@@ -677,14 +822,30 @@ button{
 }
 
 @media(max-width:1250px){
-  .editor-layout{grid-template-columns:1fr}
-  .editor-section{max-height:none}
-  .preview-wrap{min-height:650px}
-  .stats{grid-template-columns:1fr 1fr}
+
+  .editor-layout{
+    grid-template-columns:1fr
+  }
+
+  .editor-section{
+    max-height:none
+  }
+
+  .preview-wrap{
+    min-height:650px
+  }
+
+  .stats{
+    grid-template-columns:1fr 1fr
+  }
+
 }
 
 @media(max-width:800px){
-  .app{grid-template-columns:1fr}
+
+  .app{
+    grid-template-columns:1fr
+  }
 
   .sidebar{
     position:fixed;
@@ -694,7 +855,9 @@ button{
     transition:.25s
   }
 
-  .sidebar.open{left:0}
+  .sidebar.open{
+    left:0
+  }
 
   .top-right button{
     display:block;
@@ -704,7 +867,9 @@ button{
     border-radius:10px
   }
 
-  .main{padding:17px}
+  .main{
+    padding:17px
+  }
 
   .stats,
   .dash-grid,
@@ -715,20 +880,34 @@ button{
     grid-template-columns:1fr
   }
 
-  .editor-tabs{grid-template-columns:1fr 1fr}
+  .editor-tabs{
+    grid-template-columns:1fr 1fr
+  }
 
-  .preview-wrap{min-height:560px}
+  .preview-wrap{
+    min-height:560px
+  }
 
-  .preview-wrap iframe{height:550px}
+  .preview-wrap iframe{
+    height:550px
+  }
 
   .appearance-toolbar{
     align-items:flex-start;
     flex-direction:column
   }
 
-  .toolbar-actions{justify-content:flex-start}
+  .toolbar-actions{
+    justify-content:flex-start
+  }
 
   .product-actions{
     grid-template-columns:1fr
   }
+
+  .modal{
+    padding:18px;
+    max-height:95vh
+  }
+
 }
