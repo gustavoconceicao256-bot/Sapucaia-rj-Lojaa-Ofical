@@ -9,7 +9,7 @@ Projeto novo, independente e pronto para publicação no Netlify.
 - Identidade preta + rosa neon
 - Menu e categorias funcionais
 - Produtos por categoria
-- Cards com hover, selos e desconto
+- Cards com hover, selos e descontooo
 - Modal de detalhes do produto
 - Carrinho com quantidade, remoção e subtotal
 - Cupom `SAPUCAIA50` aplicando 50% OFF no frontend
