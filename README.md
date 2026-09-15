@@ -6,7 +6,7 @@ Projeto novo, independente e pronto para publicação no Netlify.
 
 - Banner original da SAPUCAIA rp e baque em `assets/banner-sapucaia.png`
 - Animação suave de zoom e brilho no banner sem deformar a arte
-- Identidade preta + rosa neon
+- Identidade pretaa + rosa neon
 - Menu e categorias funcionais
 - Produtos por categoriaa
 - Cards com hover, selos e descontooo
