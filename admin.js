@@ -1,10 +1,5 @@
-javascript
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
-
-/* =========================================================
-   CONFIGURAÇÃO PADRÃO
-   ========================================================= */
 
 const DEFAULT_APPEARANCE = {
   shopName: 'SAPUCAIA',
@@ -86,26 +81,18 @@ const DEFAULT_APPEARANCE = {
   vignette: 35
 };
 
-/* =========================================================
-   ESTADO
-   ========================================================= */
-
 const state = {
   products: [],
   orders: [],
   customers: [],
   settings: {},
- draft: clone(DEFAULT_APPEARANCE),
+  draft: structuredClone(DEFAULT_APPEARANCE),
 
   history: [],
   historyIndex: -1,
 
   editing: null
 };
-
-/* =========================================================
-   UTILIDADES
-   ========================================================= */
 
 const money = (n) =>
   Number(n || 0).toLocaleString('pt-BR', {
@@ -116,13 +103,14 @@ const money = (n) =>
 const esc = (v) =>
   String(v ?? '').replace(
     /[&<>'"]/g,
-    (c) => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    })[c]
+    (c) =>
+      ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      })[c]
   );
 
 function clone(v) {
@@ -144,10 +132,6 @@ function toast(message) {
   }, 2600);
 }
 
-/* =========================================================
-   API
-   ========================================================= */
-
 async function api(url, options = {}) {
   const response = await fetch(url, {
     credentials: 'same-origin',
@@ -168,19 +152,11 @@ async function api(url, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(
-      data.error ||
-      data.message ||
-      `Erro ${response.status}`
-    );
+    throw new Error(data.error || `Erro ${response.status}`);
   }
 
   return data;
 }
-
-/* =========================================================
-   TELAS
-   ========================================================= */
 
 function showSetup() {
   $('#setupScreen')?.classList.remove('hidden');
@@ -200,10 +176,6 @@ function showApp() {
   $('#app')?.classList.remove('hidden');
 }
 
-/* =========================================================
-   LOGIN
-   ========================================================= */
-
 async function boot() {
   try {
     const session = await api('/api/auth');
@@ -211,10 +183,8 @@ async function boot() {
     if (session.authenticated) {
       showApp();
 
-      if ($('#securityUser')) {
-        $('#securityUser').value =
-          session.username || '';
-      }
+      $('#securityUser').value =
+        session.username || '';
 
       await loadAll();
 
@@ -224,7 +194,6 @@ async function boot() {
     session.setupRequired
       ? showSetup()
       : showLogin();
-
   } catch (error) {
     console.error(error);
 
@@ -236,13 +205,13 @@ async function boot() {
 
 async function setupAdmin() {
   const username =
-    $('#setupUser')?.value.trim() || '';
+    $('#setupUser').value.trim();
 
   const password =
-    $('#setupPass')?.value || '';
+    $('#setupPass').value;
 
   const confirmation =
-    $('#setupConfirm')?.value || '';
+    $('#setupConfirm').value;
 
   if (
     username.length < 3 ||
@@ -258,16 +227,14 @@ async function setupAdmin() {
 
   const button = $('#setupBtn');
 
-  if (button) button.disabled = true;
+  button.disabled = true;
 
   try {
     await api('/api/auth', {
       method: 'POST',
-
       headers: {
         'content-type': 'application/json'
       },
-
       body: JSON.stringify({
         action: 'setup',
         username,
@@ -276,69 +243,62 @@ async function setupAdmin() {
       })
     });
 
-    if ($('#securityUser')) {
-      $('#securityUser').value = username;
-    }
+    $('#securityUser').value =
+      username;
 
     showApp();
 
     await loadAll();
 
     toast('ADM criado com sucesso.');
-
   } catch (error) {
     toast(error.message);
-
   } finally {
-    if (button) button.disabled = false;
+    button.disabled = false;
   }
 }
 
 async function login() {
   const username =
-    $('#loginUser')?.value.trim() || '';
+    $('#loginUser').value.trim();
 
   const password =
-    $('#loginPass')?.value || '';
+    $('#loginPass').value;
 
   if (!username || !password) {
     toast('Informe usuário e senha.');
+
     return;
   }
 
   const button = $('#loginBtn');
 
-  if (button) button.disabled = true;
+  button.disabled = true;
 
   try {
     await api('/api/auth', {
       method: 'POST',
-
       headers: {
         'content-type': 'application/json'
       },
-
       body: JSON.stringify({
         username,
         password
       })
     });
 
-    if ($('#securityUser')) {
-      $('#securityUser').value = username;
-    }
+    $('#securityUser').value =
+      username;
 
     showApp();
 
     await loadAll();
 
     toast('Login realizado.');
-
   } catch (error) {
     toast(error.message);
-
   } finally {
-    if (button) button.disabled = false;
+    button.disabled = false;
   }
 }
 
@@ -349,9 +309,9 @@ $('#loginBtn')?.addEventListener(
 
 $('#loginPass')?.addEventListener(
   'keydown',
-  (e) => {
-    if (e.key === 'Enter') login();
-  }
+  (e) =>
+    e.key === 'Enter' &&
+    login()
 );
 
 $('#setupBtn')?.addEventListener(
@@ -361,22 +321,19 @@ $('#setupBtn')?.addEventListener(
 
 $('#setupConfirm')?.addEventListener(
   'keydown',
-  (e) => {
-    if (e.key === 'Enter') setupAdmin();
-  }
+  (e) =>
+    e.key === 'Enter' &&
+    setupAdmin()
 );
 
 $('#logoutBtn')?.addEventListener(
   'click',
   async () => {
-
     await api('/api/auth', {
       method: 'POST',
-
       headers: {
         'content-type': 'application/json'
       },
-
       body: JSON.stringify({
         action: 'logout'
       })
@@ -385,10 +342,6 @@ $('#logoutBtn')?.addEventListener(
     location.reload();
   }
 );
-
-/* =========================================================
-   NAVEGAÇÃO
-   ========================================================= */
 
 const titles = {
   dashboard: 'Dashboard',
@@ -405,27 +358,27 @@ const titles = {
 };
 
 function go(page) {
-  if (!page) return;
-
-  $$('.page').forEach((el) => {
-    el.classList.remove('active-page');
-  });
+  $$('.page').forEach(
+    (el) =>
+      el.classList.remove(
+        'active-page'
+      )
+  );
 
   $('#' + page)?.classList.add(
     'active-page'
   );
 
-  $$('.side-link').forEach((el) => {
-    el.classList.toggle(
-      'active',
-      el.dataset.page === page
-    );
-  });
+  $$('.side-link').forEach(
+    (el) =>
+      el.classList.toggle(
+        'active',
+        el.dataset.page === page
+      )
+  );
 
-  if ($('#pageTitle')) {
-    $('#pageTitle').textContent =
-      titles[page] || 'Painel';
-  }
+  $('#pageTitle').textContent =
+    titles[page] || 'Painel';
 
   history.replaceState(
     null,
@@ -436,19 +389,23 @@ function go(page) {
   renderPage(page);
 }
 
-$$('.side-link').forEach((button) => {
-  button.addEventListener(
-    'click',
-    () => go(button.dataset.page)
-  );
-});
+$$('.side-link').forEach(
+  (button) =>
+    button.addEventListener(
+      'click',
+      () =>
+        go(button.dataset.page)
+    )
+);
 
-$$('[data-goto]').forEach((button) => {
-  button.addEventListener(
-    'click',
-    () => go(button.dataset.goto)
-  );
-});
+$$('[data-goto]').forEach(
+  (button) =>
+    button.addEventListener(
+      'click',
+      () =>
+        go(button.dataset.goto)
+    )
+);
 
 $('#mobileMenu')?.addEventListener(
   'click',
@@ -458,10 +415,6 @@ $('#mobileMenu')?.addEventListener(
     )
 );
 
-/* =========================================================
-   CARREGAR DADOS
-   ========================================================= */
-
 async function loadAll() {
   try {
     const [
@@ -470,10 +423,18 @@ async function loadAll() {
       customers,
       settings
     ] = await Promise.all([
-      api('/api/store?resource=products'),
-      api('/api/store?resource=orders'),
-      api('/api/store?resource=customers'),
-      api('/api/store?resource=settings-admin')
+      api(
+        '/api/store?resource=products'
+      ),
+      api(
+        '/api/store?resource=orders'
+      ),
+      api(
+        '/api/store?resource=customers'
+      ),
+      api(
+        '/api/store?resource=settings-admin'
+      )
     ]);
 
     state.products =
@@ -508,7 +469,6 @@ async function loadAll() {
     ) {
       go(page);
     }
-
   } catch (error) {
     console.error(error);
 
@@ -523,10 +483,6 @@ async function loadAll() {
     toast(error.message);
   }
 }
-
-/* =========================================================
-   RENDER GERAL
-   ========================================================= */
 
 function renderAll() {
   renderDashboard();
@@ -567,98 +523,80 @@ function renderPage(page) {
   }
 }
 
-/* =========================================================
-   DASHBOARD
-   ========================================================= */
-
 function renderDashboard() {
   const revenue =
     state.orders
       .filter(
         (o) =>
-          o.status !== 'Cancelado'
+          o.status !==
+          'Cancelado'
       )
       .reduce(
         (sum, o) =>
-          sum + Number(o.total || 0),
+          sum +
+          Number(
+            o.total || 0
+          ),
         0
       );
 
-  if ($('#statProducts'))
-    $('#statProducts').textContent =
-      state.products.length;
+  $('#statProducts').textContent =
+    state.products.length;
 
-  if ($('#statOrders'))
-    $('#statOrders').textContent =
-      state.orders.length;
+  $('#statOrders').textContent =
+    state.orders.length;
 
-  if ($('#statRevenue'))
-    $('#statRevenue').textContent =
-      money(revenue);
+  $('#statRevenue').textContent =
+    money(revenue);
 
-  if ($('#statCustomers'))
-    $('#statCustomers').textContent =
-      state.customers.length;
+  $('#statCustomers').textContent =
+    state.customers.length;
 
-  if ($('#recentOrders')) {
-    $('#recentOrders').innerHTML =
-      state.orders.length
-        ? `
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>PEDIDO</th>
-                <th>STATUS</th>
-                <th>TOTAL</th>
-              </tr>
-            </thead>
+  $('#recentOrders').innerHTML =
+    state.orders.length
+      ? `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>PEDIDO</th>
+              <th>STATUS</th>
+              <th>TOTAL</th>
+            </tr>
+          </thead>
 
-            <tbody>
-
-              ${state.orders
-                .slice(0, 6)
-                .map(
-                  (o) => `
-                    <tr>
-                      <td>
-                        ${esc(o.id)}
-                      </td>
-
-                      <td>
-                        ${esc(
-                          o.status ||
-                          'Aguardando pagamento'
-                        )}
-                      </td>
-
-                      <td>
-                        ${money(o.total)}
-                      </td>
-                    </tr>
-                  `
-                )
-                .join('')}
-
-            </tbody>
-          </table>
-        `
-        : `
-          <p class="muted">
-            Nenhum pedido.
-          </p>
-        `;
-  }
+          <tbody>
+            ${state.orders
+              .slice(0, 6)
+              .map(
+                (o) => `
+                  <tr>
+                    <td>${esc(o.id)}</td>
+                    <td>${esc(
+                      o.status ||
+                        'Aguardando pagamento'
+                    )}</td>
+                    <td>${money(
+                      o.total
+                    )}</td>
+                  </tr>
+                `
+              )
+              .join('')}
+          </tbody>
+        </table>
+      `
+      : '<p class="muted">Nenhum pedido.</p>';
 
   const cats = {};
 
   state.products.forEach(
     (p) => {
-      const category =
+      const k =
         p.cat ||
         'Sem categoria';
 
-      cats[category] =
-        (cats[category] || 0) + 1;
+      cats[k] =
+        (cats[k] || 0) + 1;
     }
   );
 
@@ -667,60 +605,44 @@ function renderDashboard() {
     ...Object.values(cats)
   );
 
-  if ($('#categorySummary')) {
-    $('#categorySummary').innerHTML =
-      Object.entries(cats)
-        .map(
-          ([k, v]) => `
-            <div class="cat-row">
+  $('#categorySummary').innerHTML =
+    Object.entries(cats)
+      .map(
+        ([k, v]) => `
+          <div class="cat-row">
+            <span>${esc(k)}</span>
 
-              <span>
-                ${esc(k)}
-              </span>
-
-              <div class="bar">
-                <i
-                  style="
-                    width:${(v / max) * 100}%
-                  "
-                ></i>
-              </div>
-
-              <b>
-                ${v}
-              </b>
-
+            <div class="bar">
+              <i style="width:${
+                (v / max) * 100
+              }%"></i>
             </div>
-          `
-        )
-        .join('') ||
-      `
-        <p class="muted">
-          Nenhum produto.
-        </p>
-      `;
-  }
-}
 
-/* =========================================================
-   PRODUTOS
-   ========================================================= */
+            <b>${v}</b>
+          </div>
+        `
+      )
+      .join('') ||
+    '<p class="muted">Nenhum produto.</p>';
+}
 
 function renderProducts() {
   const q =
-    ($('#productSearch')?.value || '')
-      .toLowerCase()
-      .trim();
+    (
+      $('#productSearch')
+        ?.value || ''
+    ).toLowerCase();
 
   const c =
-    $('#productCat')?.value || '';
+    $('#productCat')
+      ?.value || '';
 
   const arr =
     state.products.filter(
       (p) =>
         (
           !q ||
-          String(p.name || '')
+          String(p.name)
             .toLowerCase()
             .includes(q)
         ) &&
@@ -730,1516 +652,144 @@ function renderProducts() {
         )
     );
 
-  if (!$('#productTable'))
-    return;
-
   $('#productTable').innerHTML =
     arr.length
       ? `
         <table class="data-table">
-
           <thead>
             <tr>
               <th>PRODUTO</th>
               <th>CATEGORIA</th>
               <th>PREÇO</th>
-              <th>STATUS</th>
-              <th>DESTAQUE</th>
+              <th>VALIDADE</th>
               <th>AÇÕES</th>
             </tr>
           </thead>
 
           <tbody>
-
             ${arr
-              .map((p) => {
-
-                const active =
-                  p.active !== false;
-
-                const featured =
-                  p.featured === true ||
-                  p.featured === 'true';
-
-                return `
+              .map(
+                (p) => `
                   <tr>
-
                     <td>
-
                       <div class="product-mini">
-
                         <img
                           src="${esc(
                             p.img ||
-                            'assets/banner-sapucaia.png'
+                              'assets/banner-sapucaia.png'
                           )}"
                           alt=""
                         >
 
                         <span>
-                          ${esc(p.name)}
+                          ${esc(
+                            p.name
+                          )}
                         </span>
-
                       </div>
-
                     </td>
 
                     <td>
                       ${esc(
-                        p.cat ||
-                        'Destaques'
+                        p.cat
                       )}
                     </td>
 
                     <td>
-                      ${money(p.price)}
+                      ${money(
+                        p.price
+                      )}
                     </td>
 
                     <td>
-
-                      <span
-                        class="
-                          product-state
-                          ${active ? 'active' : ''}
-                        "
-                      >
-                        ${active ? 'Ativo' : 'Inativo'}
-                      </span>
-
+                      ${esc(
+                        p.valid ||
+                          'Permanente'
+                      )}
                     </td>
 
                     <td>
-
-                      <span
-                        class="
-                          product-state
-                          ${featured ? 'featured' : ''}
-                        "
-                      >
-                        ${
-                          featured
-                            ? 'Destaque'
-                            : 'Normal'
-                        }
-                      </span>
-
-                    </td>
-
-                    <td>
-
                       <button
                         class="action"
-                        data-edit="${esc(p.id)}"
+                        data-edit="${esc(
+                          p.id
+                        )}"
                       >
                         Editar
                       </button>
 
                       <button
                         class="action danger"
-                        data-del="${esc(p.id)}"
+                        data-del="${esc(
+                          p.id
+                        )}"
                       >
                         Remover
                       </button>
-
                     </td>
-
                   </tr>
-                `;
-              })
+                `
+              )
               .join('')}
-
           </tbody>
-
         </table>
       `
       : `
         <div class="empty">
-          Nenhum produto publicado pelo ADM.
+          Nenhum produto encontrado.
         </div>
       `;
 
   $$('[data-edit]').forEach(
-    (button) => {
-      button.onclick = () =>
-        openProduct(
-          button.dataset.edit
-        );
-    }
+    (button) =>
+      button.addEventListener(
+        'click',
+        () =>
+          openProduct(
+            button.dataset.edit
+          )
+      )
   );
 
   $$('[data-del]').forEach(
-    (button) => {
-      button.onclick = () =>
-        deleteProduct(
-          button.dataset.del
-        );
-    }
-  );
-}
-
-/* =========================================================
-   EXCLUIR PRODUTO
-   ========================================================= */
-
-async function deleteProduct(id) {
-  if (
-    !confirm(
-      'Remover este produto da loja?'
-    )
-  ) {
-    return;
-  }
-
-  try {
-    const d = await api(
-      '/api/store?resource=products',
-      {
-        method: 'POST',
-
-        headers: {
-          'content-type':
-            'application/json'
-        },
-
-        body: JSON.stringify({
-          action: 'delete',
-          id
-        })
-      }
-    );
-
-    state.products =
-      d.products || [];
-
-    renderAll();
-
-    toast(
-      'Produto removido.'
-    );
-
-  } catch (error) {
-    toast(error.message);
-  }
-}
-
-/* =========================================================
-   ABRIR PRODUTO
-   ========================================================= */
-
-function openProduct(id = null) {
-  state.editing = id;
-
-  const p = id
-    ? state.products.find(
-        (x) =>
-          String(x.id) ===
-          String(id)
-      )
-    : null;
-
-  if ($('#modalTitle')) {
-    $('#modalTitle').textContent =
-      p
-        ? 'Editar produto'
-        : 'Novo produto';
-  }
-
-  if ($('#fName'))
-    $('#fName').value =
-      p?.name || '';
-
-  if ($('#fCat'))
-    $('#fCat').value =
-      p?.cat || 'Destaques';
-
-  if ($('#fPrice'))
-    $('#fPrice').value =
-      p?.price ?? '';
-
-  if ($('#fOld'))
-    $('#fOld').value =
-      p?.old ?? '';
-
-  /*
-   * NOVOS CAMPOS
-   */
-
-  if ($('#fFeatured'))
-    $('#fFeatured').value =
-      p?.featured
-        ? 'true'
-        : 'false';
-
-  if ($('#fActive'))
-    $('#fActive').value =
-      p?.active === false
-        ? 'false'
-        : 'true';
-
-  if ($('#fMainUrl'))
-    $('#fMainUrl').value =
-      p?.img || '';
-
-  if ($('#fDesc'))
-    $('#fDesc').value =
-      p?.desc || '';
-
-  if ($('#fDescImage1Url'))
-    $('#fDescImage1Url').value =
-      p?.descImage1 || '';
-
-  if ($('#fDescImage2Url'))
-    $('#fDescImage2Url').value =
-      p?.descImage2 || '';
-
-  if ($('#fFaq'))
-    $('#fFaq').value =
-      p?.faq || '';
-
-  /*
-   * LIMPAR UPLOADS
-   */
-
-  if ($('#fMainFile'))
-    $('#fMainFile').value = '';
-
-  if ($('#fDescImage1File'))
-    $('#fDescImage1File').value = '';
-
-  if ($('#fDescImage2File'))
-    $('#fDescImage2File').value = '';
-
-  if ($('#mainUploadStatus'))
-    $('#mainUploadStatus').textContent =
-      'Nenhuma nova imagem escolhida.';
-
-  if ($('#descImage1Status'))
-    $('#descImage1Status').textContent =
-      'Nenhuma nova imagem escolhida.';
-
-  if ($('#descImage2Status'))
-    $('#descImage2Status').textContent =
-      'Nenhuma nova imagem escolhida.';
-
-  $('#productModal')?.classList.add(
-    'open'
-  );
-
-  document.body.style.overflow =
-    'hidden';
-
-  updateProductPreview();
-}
-
-/* =========================================================
-   FECHAR PRODUTO
-   ========================================================= */
-
-function closeProductModal() {
-  $('#productModal')?.classList.remove(
-    'open'
-  );
-
-  document.body.style.overflow =
-    '';
-}
-
-$('#addProductBtn')?.addEventListener(
-  'click',
-  () => openProduct()
-);
-
-$('#closeProduct')?.addEventListener(
-  'click',
-  closeProductModal
-);
-
-$('#productModal')?.addEventListener(
-  'click',
-  (e) => {
-    if (
-      e.target.id ===
-      'productModal'
-    ) {
-      closeProductModal();
-    }
-  }
-);
-
-/* =========================================================
-   UPLOAD
-   ========================================================= */
-
-async function uploadFile(file) {
-  const form =
-    new FormData();
-
-  form.append(
-    'file',
-    file
-  );
-
-  const response =
-    await fetch(
-      '/api/media',
-      {
-        method: 'POST',
-        body: form,
-        credentials: 'same-origin'
-      }
-    );
-
-  const data =
-    await response
-      .json()
-      .catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(
-      data.error ||
-      'Falha no upload.'
-    );
-  }
-
-  return data.url || '';
-}
-
-function validateImageFile(
-  input,
-  status
-) {
-  const file =
-    input?.files?.[0];
-
-  if (!file)
-    return null;
-
-  if (
-    file.size >
-    12 * 1024 * 1024
-  ) {
-    toast(
-      'Imagem máxima: 12 MB.'
-    );
-
-    input.value = '';
-
-    if (status) {
-      status.textContent =
-        'Nenhuma nova imagem escolhida.';
-    }
-
-    return null;
-  }
-
-  if (status) {
-    status.textContent =
-      `Arquivo selecionado: ${file.name}`;
-  }
-
-  return file;
-}
-
-$('#fMainFile')?.addEventListener(
-  'change',
-  () => {
-    validateImageFile(
-      $('#fMainFile'),
-      $('#mainUploadStatus')
-    );
-
-    updateProductPreview();
-  }
-);
-
-$('#fDescImage1File')?.addEventListener(
-  'change',
-  () => {
-    validateImageFile(
-      $('#fDescImage1File'),
-      $('#descImage1Status')
-    );
-
-    updateProductPreview();
-  }
-);
-
-$('#fDescImage2File')?.addEventListener(
-  'change',
-  () => {
-    validateImageFile(
-      $('#fDescImage2File'),
-      $('#descImage2Status')
-    );
-
-    updateProductPreview();
-  }
-);
-
-/* =========================================================
-   SALVAR PRODUTO
-   ========================================================= */
-
-async function saveProduct(
-  publish = true
-) {
-  const name =
-    $('#fName')?.value.trim() || '';
-
-  const cat =
-    $('#fCat')?.value || '';
-
-  const price =
-    Number(
-      $('#fPrice')?.value
-    );
-
-  if (
-    !name ||
-    !cat ||
-    !Number.isFinite(price) ||
-    price <= 0
-  ) {
-    toast(
-      'Preencha nome, categoria e preço.'
-    );
-
-    return;
-  }
-
-  const button =
-    $('#saveProduct');
-
-  const draftButton =
-    $('#saveProductDraft');
-
-  if (button)
-    button.disabled = true;
-
-  if (draftButton)
-    draftButton.disabled = true;
-
-  if (button) {
-    button.textContent =
-      publish
-        ? 'Publicando...'
-        : 'Salvando...';
-  }
-
-  try {
-
-    const old =
-      state.editing
-        ? state.products.find(
-            (p) =>
-              String(p.id) ===
-              String(state.editing)
-          )
-        : null;
-
-    /*
-     * CAPA
-     */
-
-    let img =
-      $('#fMainUrl')?.value.trim() ||
-      old?.img ||
-      '';
-
-    const mainFile =
-      $('#fMainFile')
-        ?.files?.[0];
-
-    if (mainFile) {
-      img =
-        await uploadFile(
-          mainFile
-        );
-    }
-
-    /*
-     * IMAGEM DESCRIÇÃO 1
-     */
-
-    let descImage1 =
-      $('#fDescImage1Url')
-        ?.value.trim() ||
-      old?.descImage1 ||
-      '';
-
-    const descFile1 =
-      $('#fDescImage1File')
-        ?.files?.[0];
-
-    if (descFile1) {
-      descImage1 =
-        await uploadFile(
-          descFile1
-        );
-    }
-
-    /*
-     * IMAGEM DESCRIÇÃO 2
-     */
-
-    let descImage2 =
-      $('#fDescImage2Url')
-        ?.value.trim() ||
-      old?.descImage2 ||
-      '';
-
-    const descFile2 =
-      $('#fDescImage2File')
-        ?.files?.[0];
-
-    if (descFile2) {
-      descImage2 =
-        await uploadFile(
-          descFile2
-        );
-    }
-
-    /*
-     * IMAGENS DO PRODUTO
-     */
-
-    const images = [
-      img,
-      descImage1,
-      descImage2
-    ].filter(Boolean);
-
-    /*
-     * DADOS DO PRODUTO
-     */
-
-    const product = {
-
-      id:
-        state.editing ||
-        crypto.randomUUID(),
-
-      name,
-
-      cat,
-
-      price,
-
-      old:
-        Number(
-          $('#fOld')?.value || 0
-        ),
-
-      featured:
-        $('#fFeatured')?.value ===
-        'true',
-
-      active:
-        $('#fActive')?.value !==
-        'false',
-
-      img,
-
-      descImage1,
-
-      descImage2,
-
-      desc:
-        $('#fDesc')
-          ?.value.trim() || '',
-
-      faq:
-        $('#fFaq')
-          ?.value.trim() || '',
-
-      images,
-
-      /*
-       * RASCUNHO OU PUBLICADO
-       */
-
-      published:
-        publish
-    };
-
-    const d =
-      await api(
-        '/api/store?resource=products',
-        {
-          method: 'POST',
-
-          headers: {
-            'content-type':
-              'application/json'
-          },
-
-          body: JSON.stringify({
-            action: 'save',
-            product
-          })
-        }
-      );
-
-    if (
-      !d.ok ||
-      !d.product
-    ) {
-      throw new Error(
-        'O backend não confirmou o salvamento.'
-      );
-    }
-
-    state.products =
-      d.products || [];
-
-    closeProductModal();
-
-    renderAll();
-
-    toast(
-      publish
-        ? 'Produto publicado na loja.'
-        : 'Rascunho salvo.'
-    );
-
-    state.editing = null;
-
-  } catch (error) {
-
-    console.error(error);
-
-    toast(
-      error.message
-    );
-
-  } finally {
-
-    if (button)
-      button.disabled = false;
-
-    if (draftButton)
-      draftButton.disabled = false;
-
-    if (button)
-      button.textContent =
-        'Publicar produto';
-  }
-}
-
-/* =========================================================
-   BOTÕES DE PRODUTO
-   ========================================================= */
-
-$('#saveProduct')?.addEventListener(
-  'click',
-  () => saveProduct(true)
-);
-
-$('#saveProductDraft')?.addEventListener(
-  'click',
-  () => saveProduct(false)
-);
-
-/* =========================================================
-   PREVIEW DO PRODUTO
-   ========================================================= */
-
-function updateProductPreview() {
-
-  const preview =
-    $('#productLivePreview') ||
-    $('#productPreview');
-
-  if (!preview)
-    return;
-
-  const name =
-    $('#fName')?.value ||
-    'Nome do produto';
-
-  const cat =
-    $('#fCat')?.value ||
-    'Destaques';
-
-  const price =
-    Number(
-      $('#fPrice')?.value || 0
-    );
-
-  const old =
-    Number(
-      $('#fOld')?.value || 0
-    );
-
-  const img =
-    $('#fMainUrl')?.value ||
-    'assets/banner-sapucaia.png';
-
-  const desc =
-    $('#fDesc')?.value ||
-    'Descrição do produto.';
-
-  const featured =
-    $('#fFeatured')?.value ===
-    'true';
-
-  const active =
-    $('#fActive')?.value !==
-    'false';
-
-  preview.innerHTML = `
-    <div
-      style="
-        width:100%;
-        max-width:460px;
-        margin:auto;
-        background:#0d0d13;
-        border:1px solid rgba(255,255,255,.08);
-        border-radius:20px;
-        overflow:hidden;
-        box-shadow:0 20px 60px rgba(0,0,0,.4);
-      "
-    >
-
-      <div
-        style="
-          position:relative;
-          height:220px;
-          background:#08080c;
-        "
-      >
-
-        <img
-          src="${esc(img)}"
-          style="
-            width:100%;
-            height:100%;
-            object-fit:cover;
-            display:block;
-          "
-          onerror="
-            this.src='assets/banner-sapucaia.png'
-          "
-        >
-
-        ${
-          featured
-            ? `
-              <span
-                style="
-                  position:absolute;
-                  top:12px;
-                  left:12px;
-                  padding:7px 10px;
-                  border-radius:9px;
-                  background:#ff087f;
-                  color:#fff;
-                  font-size:10px;
-                  font-weight:800;
-                "
-              >
-                DESTAQUE
-              </span>
-            `
-            : ''
-        }
-
-        ${
-          !active
-            ? `
-              <span
-                style="
-                  position:absolute;
-                  top:12px;
-                  right:12px;
-                  padding:7px 10px;
-                  border-radius:9px;
-                  background:#22222b;
-                  color:#aaa;
-                  font-size:10px;
-                  font-weight:800;
-                "
-              >
-                INATIVO
-              </span>
-            `
-            : ''
-        }
-
-      </div>
-
-      <div
-        style="
-          padding:18px;
-        "
-      >
-
-        <div
-          style="
-            color:#ff087f;
-            font-size:10px;
-            font-weight:800;
-            text-transform:uppercase;
-            letter-spacing:1.5px;
-          "
-        >
-          ${esc(cat)}
-        </div>
-
-        <div
-          style="
-            color:#fff;
-            font-size:21px;
-            font-weight:800;
-            margin-top:7px;
-          "
-        >
-          ${esc(name)}
-        </div>
-
-        <div
-          style="
-            margin-top:9px;
-          "
-        >
-
-          <strong
-            style="
-              color:#fff;
-              font-size:20px;
-            "
-          >
-            ${money(price)}
-          </strong>
-
-          ${
-            old > 0
-              ? `
-                <span
-                  style="
-                    color:#777;
-                    text-decoration:line-through;
-                    font-size:11px;
-                    margin-left:7px;
-                  "
-                >
-                  ${money(old)}
-                </span>
-              `
-              : ''
-          }
-
-        </div>
-
-        <div
-          style="
-            margin-top:15px;
-            color:#999;
-            font-size:11px;
-            line-height:1.6;
-          "
-        >
-          ${esc(desc)}
-        </div>
-
-        <button
-          style="
-            width:100%;
-            margin-top:16px;
-            border:0;
-            padding:12px;
-            border-radius:12px;
-            background:linear-gradient(
-              135deg,
-              #ff087f,
-              #ff4fa3
-            );
-            color:#fff;
-            font-weight:800;
-          "
-        >
-          Adicionar ao carrinho
-        </button>
-
-      </div>
-
-    </div>
-  `;
-}
-
-[
-  '#fName',
-  '#fCat',
-  '#fPrice',
-  '#fOld',
-  '#fFeatured',
-  '#fActive',
-  '#fMainUrl',
-  '#fDescImage1Url',
-  '#fDescImage2Url',
-  '#fDesc',
-  '#fFaq'
-].forEach((selector) => {
-
-  $(selector)?.addEventListener(
-    'input',
-    updateProductPreview
-  );
-
-  $(selector)?.addEventListener(
-    'change',
-    updateProductPreview
-  );
-
-});
-
-/* =========================================================
-   PESQUISA
-   ========================================================= */
-
-$('#productSearch')?.addEventListener(
-  'input',
-  renderProducts
-);
-
-$('#productCat')?.addEventListener(
-  'change',
-  renderProducts
-);
-
-/* =========================================================
-   PEDIDOS
-   ========================================================= */
-
-function renderOrders() {
-  const filter =
-    $('#orderStatusFilter')
-      ?.value || '';
-
-  const arr =
-    state.orders.filter(
-      (o) =>
-        !filter ||
-        o.status === filter
-    );
-
-  if (!$('#orderTable'))
-    return;
-
-  $('#orderTable').innerHTML =
-    arr.length
-      ? `
-        <table class="data-table">
-
-          <thead>
-            <tr>
-              <th>PEDIDO</th>
-              <th>DATA</th>
-              <th>TOTAL</th>
-              <th>STATUS</th>
-              <th>AÇÃO</th>
-            </tr>
-          </thead>
-
-          <tbody>
-
-            ${arr
-              .map(
-                (o) => `
-                  <tr>
-
-                    <td>
-                      ${esc(o.id)}
-                    </td>
-
-                    <td>
-                      ${esc(
-                        o.createdAt ||
-                        '—'
-                      )}
-                    </td>
-
-                    <td>
-                      ${money(o.total)}
-                    </td>
-
-                    <td>
-                      ${esc(
-                        o.status ||
-                        'Aguardando pagamento'
-                      )}
-                    </td>
-
-                    <td>
-
-                      <select
-                        class="status-select"
-                        data-id="${esc(o.id)}"
-                      >
-
-                        <option>
-                          Aguardando pagamento
-                        </option>
-
-                        <option>
-                          Pago
-                        </option>
-
-                        <option>
-                          Entregue
-                        </option>
-
-                        <option>
-                          Cancelado
-                        </option>
-
-                      </select>
-
-                    </td>
-
-                  </tr>
-                `
-              )
-              .join('')}
-
-          </tbody>
-
-        </table>
-      `
-      : `
-        <div class="empty">
-          Nenhum pedido encontrado.
-        </div>
-      `;
-
-  $$('.status-select').forEach(
-    (select) => {
-
-      const order =
-        state.orders.find(
-          (x) =>
-            String(x.id) ===
-            String(select.dataset.id)
-        );
-
-      if (order) {
-        select.value =
-          order.status ||
-          'Aguardando pagamento';
-      }
-
-      select.onchange =
+    (button) =>
+      button.addEventListener(
+        'click',
         () =>
-          updateOrder(
-            select.dataset.id,
-            select.value
-          );
-    }
-  );
-}
-
-async function updateOrder(
-  id,
-  status
-) {
-  try {
-
-    await api(
-      '/api/store?resource=orders',
-      {
-        method: 'POST',
-
-        headers: {
-          'content-type':
-            'application/json'
-        },
-
-        body: JSON.stringify({
-          action: 'status',
-          id,
-          status
-        })
-      }
-    );
-
-    const order =
-      state.orders.find(
-        (x) =>
-          String(x.id) ===
-          String(id)
-      );
-
-    if (order)
-      order.status = status;
-
-    renderDashboard();
-    renderOrders();
-
-    toast(
-      'Status atualizado.'
-    );
-
-  } catch (error) {
-    toast(error.message);
-  }
-}
-
-$('#orderStatusFilter')?.addEventListener(
-  'change',
-  renderOrders
-);
-
-/* =========================================================
-   CLIENTES
-   ========================================================= */
-
-function renderCustomers() {
-  const arr =
-    state.customers || [];
-
-  if (!$('#customerTable'))
-    return;
-
-  $('#customerTable').innerHTML =
-    arr.length
-      ? `
-        <table class="data-table">
-
-          <thead>
-            <tr>
-              <th>CLIENTE</th>
-              <th>DISCORD</th>
-              <th>E-MAIL</th>
-            </tr>
-          </thead>
-
-          <tbody>
-
-            ${arr
-              .map(
-                (c) => `
-                  <tr>
-
-                    <td>
-                      ${esc(
-                        c.name ||
-                        c.global_name ||
-                        c.username ||
-                        'Cliente'
-                      )}
-                    </td>
-
-                    <td>
-                      ${esc(
-                        c.discord ||
-                        c.id ||
-                        '—'
-                      )}
-                    </td>
-
-                    <td>
-                      ${esc(
-                        c.email ||
-                        '—'
-                      )}
-                    </td>
-
-                  </tr>
-                `
-              )
-              .join('')}
-
-          </tbody>
-
-        </table>
-      `
-      : `
-        <div class="empty">
-          Nenhum cliente identificado.
-        </div>
-      `;
-}
-
-/* =========================================================
-   CUPOM
-   ========================================================= */
-
-function renderCoupon() {
-  const code =
-    state.settings.couponCode ||
-    'SAPUCAIA50';
-
-  const percent =
-    Number(
-      state.settings.couponPercent ??
-      50
-    );
-
-  if ($('#couponCodeAdmin'))
-    $('#couponCodeAdmin').value =
-      code;
-
-  if ($('#couponPercentAdmin'))
-    $('#couponPercentAdmin').value =
-      percent;
-
-  if ($('#couponPreview'))
-    $('#couponPreview').textContent =
-      code;
-
-  if ($('#couponHeadline'))
-    $('#couponHeadline').textContent =
-      `${percent}% OFF EM TODOS OS PRODUTOS`;
-}
-
-/* =========================================================
-   CONFIGURAÇÕES
-   ========================================================= */
-
-async function saveSettings(
-  partial
-) {
-  const next = {
-    ...state.settings,
-    ...partial
-  };
-
-  try {
-
-    const d =
-      await api(
-        '/api/store?resource=settings',
-        {
-          method: 'POST',
-
-          headers: {
-            'content-type':
-              'application/json'
-          },
-
-          body: JSON.stringify({
-            settings: next
-          })
-        }
-      );
-
-    state.settings = {
-      ...DEFAULT_APPEARANCE,
-      ...(d.settings || next)
-    };
-
-    state.draft =
-      clone(state.settings);
-
-    resetHistory();
-
-    fillAllSettings();
-
-    renderCoupon();
-
-    toast(
-      'Configurações salvas.'
-    );
-
-  } catch (error) {
-    toast(error.message);
-  }
-}
-
-$('#saveCoupon')?.addEventListener(
-  'click',
-  () =>
-    saveSettings({
-      couponCode:
-        $('#couponCodeAdmin')
-          ?.value
-          .trim()
-          .toUpperCase() || '',
-
-      couponPercent:
-        Math.max(
-          0,
-          Math.min(
-            100,
-            Number(
-              $('#couponPercentAdmin')
-                ?.value || 0
-            )
+          deleteProduct(
+            button.dataset.del
           )
-        )
-    })
-);
-
-function fillAllSettings() {
-  const s =
-    state.settings || {};
-
-  if ($('#paymentProvider'))
-    $('#paymentProvider').value =
-      s.paymentProvider ||
-      'mercadopago';
-
-  if ($('#pixEnabled'))
-    $('#pixEnabled').value =
-      String(
-        s.pixEnabled !== false
-      );
-
-  if ($('#infinitePayEnabled'))
-    $('#infinitePayEnabled').value =
-      String(
-        s.infinitePayEnabled === true
-      );
-
-  if ($('#infinitePayHandle'))
-    $('#infinitePayHandle').value =
-      s.infinitePayHandle || '';
-
-  if ($('#fivemServerName'))
-    $('#fivemServerName').value =
-      s.fivemServerName ||
-      'SAPUCAIA';
-
-  if ($('#fivemWebhookUrl'))
-    $('#fivemWebhookUrl').value =
-      s.fivemWebhookUrl || '';
-
-  if ($('#discordClientId'))
-    $('#discordClientId').value =
-      s.discordClientId || '';
-
-  if ($('#discordRedirectUri'))
-    $('#discordRedirectUri').value =
-      s.discordRedirectUri || '';
-
-  if ($('#discordScopes'))
-    $('#discordScopes').value =
-      s.discordScopes ||
-      'identify email';
-
-  if ($('#supportDiscordUrl'))
-    $('#supportDiscordUrl').value =
-      s.discordUrl || '';
-
-  if ($('#supportUrl'))
-    $('#supportUrl').value =
-      s.supportUrl || '';
-
-  if ($('#supportEmail'))
-    $('#supportEmail').value =
-      s.supportEmail || '';
-
-  if ($('#termsUrl'))
-    $('#termsUrl').value =
-      s.termsUrl === 'terms.html'
-        ? ''
-        : s.termsUrl || '';
-
-  if ($('#faqJson'))
-    $('#faqJson').value =
-      JSON.stringify(
-        s.faq || [],
-        null,
-        2
-      );
-
-  fillEditor();
-}
-
-/* =========================================================
-   EDITOR VISUAL
-   ========================================================= */
-
-const colorFields = [
-  [
-    '#colorPrimary',
-    'primaryColor'
-  ],
-
-  [
-    '#colorSecondary',
-    'secondaryColor'
-  ],
-
-  [
-    '#colorBackground',
-    'backgroundColor'
-  ],
-
-  [
-    '#colorSurface',
-    'surfaceColor'
-  ],
-
-  [
-    '#colorText',
-    'textColor'
-  ],
-
-  [
-    '#colorMuted',
-    'mutedColor'
-  ],
-
-  [
-    '#colorButton',
-    'buttonColor'
-  ],
-
-  [
-    '#colorButtonHover',
-    'buttonHoverColor'
-  ],
-
-  [
-    '#colorBorder',
-    'borderColor'
-  ],
-
-  [
-    '#colorPrice',
-    'priceColor'
-  ]
-];
-
-function pushHistory() {
-  const current =
-    clone(state.draft);
-
-  const last =
-    state.history[
-      state.historyIndex
-    ];
-
-  if (
-    last &&
-    JSON.stringify(last) ===
-      JSON.stringify(current)
-  ) {
-    return;
-  }
-
-  state.history =
-    state.history.slice(
-      0,
-      state.historyIndex + 1
-    );
-
-  state.history.push(
-    current
+      )
   );
 
-  if (
-    state.history.length >
-    50
-  ) {
-    state.history.shift();
+  const cats = [
+    ...new Set(
+      state.products
+        .map((p) => p.cat)
+        .filter(Boolean)
+    )
+  ];
+
+  if ($('#productCat')) {
+    $('#productCat').innerHTML =
+      `
+        <option value="">
+          Todas as categorias
+        </option>
+      ` +
+      cats
+        .map(
+          (cat) =>
+            `
+              <option
+                value="${esc(cat)}"
+              >
+                ${esc(cat)}
+              </option>
+            `
+        )
+        .join('');
   }
-
-  state.historyIndex =
-    state.history.length - 1;
-
-  updateHistoryButtons();
 }
 
 function resetHistory() {
@@ -2252,23 +802,30 @@ function resetHistory() {
   updateHistoryButtons();
 }
 
-function updateHistoryButtons() {
-  if ($('#undoAppearance')) {
-    $('#undoAppearance').disabled =
-      state.historyIndex <= 0;
-  }
+function pushHistory() {
+  state.history =
+    state.history.slice(
+      0,
+      state.historyIndex + 1
+    );
 
-  if ($('#redoAppearance')) {
-    $('#redoAppearance').disabled =
-      state.historyIndex >=
-      state.history.length - 1;
-  }
+  state.history.push(
+    clone(state.draft)
+  );
+
+  state.historyIndex =
+    state.history.length - 1;
+
+  updateHistoryButtons();
 }
 
-function applyDraftMutation(
-  mutator
-) {
-  mutator(state.draft);
+function applyDraftMutation(mutator) {
+  const next =
+    clone(state.draft);
+
+  mutator(next);
+
+  state.draft = next;
 
   pushHistory();
 
@@ -2280,9 +837,8 @@ function applyDraftMutation(
 function undo() {
   if (
     state.historyIndex <= 0
-  ) {
+  )
     return;
-  }
 
   state.historyIndex--;
 
@@ -2304,9 +860,8 @@ function redo() {
   if (
     state.historyIndex >=
     state.history.length - 1
-  ) {
+  )
     return;
-  }
 
   state.historyIndex++;
 
@@ -2324,6 +879,927 @@ function redo() {
   updateHistoryButtons();
 }
 
+function updateHistoryButtons() {
+  const undoBtn =
+    $('#undoAppearance');
+
+  const redoBtn =
+    $('#redoAppearance');
+
+  if (undoBtn) {
+    undoBtn.disabled =
+      state.historyIndex <= 0;
+  }
+
+  if (redoBtn) {
+    redoBtn.disabled =
+      state.historyIndex >=
+      state.history.length - 1;
+  }
+}
+
+async function uploadFile(file) {
+  if (!file)
+    throw new Error(
+      'Nenhum arquivo selecionado.'
+    );
+
+  if (
+    file.size >
+    12 * 1024 * 1024
+  ) {
+    throw new Error(
+      'Imagem máxima: 12 MB.'
+    );
+  }
+
+  const form =
+    new FormData();
+
+  form.append(
+    'file',
+    file
+  );
+
+  const response =
+    await fetch(
+      '/api/store?resource=media',
+      {
+        method: 'POST',
+        credentials:
+          'same-origin',
+        body: form
+      }
+    );
+
+  const text =
+    await response.text();
+
+  let data = {};
+
+  try {
+    data = text
+      ? JSON.parse(text)
+      : {};
+  } catch {
+    throw new Error(
+      `Resposta inválida do servidor (${response.status}).`
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ||
+        `Erro ${response.status}`
+    );
+  }
+
+  return (
+    data.url ||
+    data.media?.url ||
+    ''
+  );
+}
+
+function fillAllSettings() {
+  const s =
+    state.settings || {};
+
+  const fields = {
+    '#paymentProvider':
+      s.paymentProvider,
+    '#pixEnabled':
+      s.pixEnabled,
+    '#infinitePayEnabled':
+      s.infinitePayEnabled,
+    '#infinitePayHandle':
+      s.infinitePayHandle,
+    '#fivemServerName':
+      s.fivemServerName,
+    '#fivemWebhookUrl':
+      s.fivemWebhookUrl,
+    '#discordClientId':
+      s.discordClientId,
+    '#discordRedirectUri':
+      s.discordRedirectUri,
+    '#discordScopes':
+      s.discordScopes,
+    '#supportDiscordUrl':
+      s.discordUrl,
+    '#supportUrl':
+      s.supportUrl,
+    '#supportEmail':
+      s.supportEmail,
+    '#termsUrl':
+      s.termsUrl
+  };
+
+  Object.entries(fields).forEach(
+    ([id, value]) => {
+      const el = $(id);
+
+      if (!el) return;
+
+      if (
+        el.type === 'checkbox'
+      ) {
+        el.checked =
+          Boolean(value);
+      } else {
+        el.value =
+          value ?? '';
+      }
+    }
+  );
+
+  if ($('#faqJson')) {
+    $('#faqJson').value =
+      JSON.stringify(
+        s.faq || [],
+        null,
+        2
+      );
+  }
+}
+
+async function saveSettings(
+  settings
+) {
+  try {
+    await api(
+      '/api/store?resource=settings-admin',
+      {
+        method: 'POST',
+        headers: {
+          'content-type':
+            'application/json'
+        },
+        body: JSON.stringify(
+          settings
+        )
+      }
+    );
+
+    state.settings = {
+      ...state.settings,
+      ...settings
+    };
+
+    state.draft =
+      clone(state.settings);
+
+    resetHistory();
+
+    fillAllSettings();
+
+    postPreview();
+
+    toast(
+      'Configurações salvas.'
+    );
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+function openProduct(id = null) {
+  state.editing =
+    id
+      ? state.products.find(
+          (p) =>
+            String(p.id) ===
+            String(id)
+        )
+      : null;
+
+  const product =
+    state.editing;
+
+  $('#modalTitle').textContent =
+    product
+      ? 'Editar produto'
+      : 'Novo produto';
+
+  $('#fName').value =
+    product?.name || '';
+
+  $('#fCat').value =
+    product?.cat || '';
+
+  $('#fPrice').value =
+    product?.price || '';
+
+  $('#fOld').value =
+    product?.oldPrice ||
+    product?.old ||
+    '';
+
+  $('#fFeatured').value =
+    String(
+      product?.featured ??
+        false
+    );
+
+  $('#fActive').value =
+    String(
+      product?.active ??
+        true
+    );
+
+  $('#fMainUrl').value =
+    product?.img || '';
+
+  $('#fDescImage1Url').value =
+    product?.descImage1 ||
+    '';
+
+  $('#fDescImage2Url').value =
+    product?.descImage2 ||
+    '';
+
+  $('#fDesc').value =
+    product?.description ||
+    '';
+
+  $('#fFaq').value =
+    product?.faq
+      ? JSON.stringify(
+          product.faq,
+          null,
+          2
+        )
+      : '';
+
+  if ($('#fMainFile'))
+    $('#fMainFile').value = '';
+
+  if ($('#fDescImage1File'))
+    $('#fDescImage1File').value = '';
+
+  if ($('#fDescImage2File'))
+    $('#fDescImage2File').value = '';
+
+  $('#productModal')?.classList.add(
+    'open'
+  );
+
+  updateProductPreview();
+}
+
+function closeProductModal() {
+  $('#productModal')?.classList.remove(
+    'open'
+  );
+
+  state.editing = null;
+}
+
+$('#closeProduct')?.addEventListener(
+  'click',
+  closeProductModal
+);
+
+$('#productModal')?.addEventListener(
+  'click',
+  (event) => {
+    if (
+      event.target ===
+      $('#productModal')
+    ) {
+      closeProductModal();
+    }
+  }
+);
+
+function getProductFormData() {
+  let faq = [];
+
+  const rawFaq =
+    $('#fFaq')?.value.trim();
+
+  if (rawFaq) {
+    try {
+      faq = JSON.parse(rawFaq);
+
+      if (!Array.isArray(faq)) {
+        throw new Error();
+      }
+    } catch {
+      faq = rawFaq
+        .split(/\n+/)
+        .map(
+          (item) => ({
+            question: item.trim(),
+            answer: ''
+          })
+        )
+        .filter(
+          (item) =>
+            item.question
+        );
+    }
+  }
+
+  return {
+    id:
+      state.editing?.id ||
+      crypto.randomUUID(),
+
+    name:
+      $('#fName')?.value.trim() ||
+      '',
+
+    cat:
+      $('#fCat')?.value.trim() ||
+      '',
+
+    price:
+      Number(
+        $('#fPrice')?.value || 0
+      ),
+
+    oldPrice:
+      Number(
+        $('#fOld')?.value || 0
+      ),
+
+    featured:
+      $('#fFeatured')?.value ===
+      'true',
+
+    active:
+      $('#fActive')?.value !==
+      'false',
+
+    img:
+      $('#fMainUrl')?.value.trim() ||
+      '',
+
+    descImage1:
+      $('#fDescImage1Url')
+        ?.value.trim() ||
+      '',
+
+    descImage2:
+      $('#fDescImage2Url')
+        ?.value.trim() ||
+      '',
+
+    description:
+      $('#fDesc')?.value.trim() ||
+      '',
+
+    faq
+  };
+}
+
+async function saveProduct(
+  publish = true
+) {
+  try {
+    const product =
+      getProductFormData();
+
+    if (!product.name) {
+      toast(
+        'Informe o nome do produto.'
+      );
+
+      return;
+    }
+
+    if (!product.cat) {
+      toast(
+        'Informe a categoria.'
+      );
+
+      return;
+    }
+
+    if (
+      !product.price ||
+      product.price <= 0
+    ) {
+      toast(
+        'Informe um preço válido.'
+      );
+
+      return;
+    }
+
+    const mainFile =
+      $('#fMainFile')
+        ?.files?.[0];
+
+    const descFile1 =
+      $('#fDescImage1File')
+        ?.files?.[0];
+
+    const descFile2 =
+      $('#fDescImage2File')
+        ?.files?.[0];
+
+    if (mainFile) {
+      product.img =
+        await uploadFile(
+          mainFile
+        );
+
+      $('#fMainUrl').value =
+        product.img;
+    }
+
+    if (descFile1) {
+      product.descImage1 =
+        await uploadFile(
+          descFile1
+        );
+
+      $('#fDescImage1Url').value =
+        product.descImage1;
+    }
+
+    if (descFile2) {
+      product.descImage2 =
+        await uploadFile(
+          descFile2
+        );
+
+      $('#fDescImage2Url').value =
+        product.descImage2;
+    }
+
+    product.status =
+      publish
+        ? 'Publicado'
+        : 'Rascunho';
+
+    await api(
+      '/api/store?resource=products',
+      {
+        method: 'POST',
+        headers: {
+          'content-type':
+            'application/json'
+        },
+        body: JSON.stringify(
+          product
+        )
+      }
+    );
+
+    await loadAll();
+
+    closeProductModal();
+
+    toast(
+      publish
+        ? 'Produto publicado.'
+        : 'Rascunho salvo.'
+    );
+  } catch (error) {
+    console.error(error);
+
+    toast(error.message);
+  }
+}
+
+$('#saveProduct')?.addEventListener(
+  'click',
+  () =>
+    saveProduct(true)
+);
+
+$('#saveProductDraft')?.addEventListener(
+  'click',
+  () =>
+    saveProduct(false)
+);
+
+async function deleteProduct(id) {
+  if (
+    !confirm(
+      'Remover este produto?'
+    )
+  ) {
+    return;
+  }
+
+  try {
+    await api(
+      '/api/store?resource=products',
+      {
+        method: 'DELETE',
+        headers: {
+          'content-type':
+            'application/json'
+        },
+        body: JSON.stringify({
+          id
+        })
+      }
+    );
+
+    await loadAll();
+
+    toast(
+      'Produto removido.'
+    );
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+function updateProductPreview() {
+  const preview =
+    $('#productLivePreview') ||
+    $('#productPreview');
+
+  if (!preview) return;
+
+  const name =
+    $('#fName')
+      ?.value.trim() ||
+    'Nome do produto';
+
+  const cat =
+    $('#fCat')
+      ?.value ||
+    'Destaques';
+
+  const price =
+    Number(
+      $('#fPrice')
+        ?.value || 0
+    );
+
+  const old =
+    Number(
+      $('#fOld')
+        ?.value || 0
+    );
+
+  const img =
+    $('#fMainUrl')
+      ?.value.trim() ||
+    'assets/banner-sapucaia.png';
+
+  const descImage1 =
+    $('#fDescImage1Url')
+      ?.value.trim() ||
+    '';
+
+  const descImage2 =
+    $('#fDescImage2Url')
+      ?.value.trim() ||
+    '';
+
+  const desc =
+    $('#fDesc')
+      ?.value.trim() ||
+    'A descrição do produto aparecerá aqui.';
+
+  const faqRaw =
+    $('#fFaq')
+      ?.value.trim() ||
+    '';
+
+  const featured =
+    $('#fFeatured')
+      ?.value ===
+    'true';
+
+  const active =
+    $('#fActive')
+      ?.value !==
+    'false';
+
+  const faqItems =
+    faqRaw
+      .split(/\n+/)
+      .map(
+        (v) =>
+          v.trim()
+      )
+      .filter(Boolean)
+      .slice(0, 6);
+
+  const faqHtml =
+    faqItems.length
+      ? faqItems
+          .map((item) => {
+            const parts =
+              item.split(':');
+
+            const question =
+              parts.shift()
+                ?.trim() ||
+              item;
+
+            const answer =
+              parts
+                .join(':')
+                .trim() ||
+              'Resposta da dúvida frequente.';
+
+            return `
+              <details class="adm-preview-faq">
+                <summary>
+                  ${esc(
+                    question
+                  )}
+                </summary>
+
+                <p>
+                  ${esc(
+                    answer
+                  )}
+                </p>
+              </details>
+            `;
+          })
+          .join('')
+      : `
+        <p class="adm-preview-muted">
+          Nenhuma dúvida frequente cadastrada.
+        </p>
+      `;
+
+  const media = [
+    descImage1,
+    descImage2
+  ].filter(Boolean);
+
+  preview.innerHTML = `
+    <div class="adm-product-preview">
+
+      <div class="adm-preview-top">
+
+        <span>
+          PRÉVIA DO PRODUTO
+        </span>
+
+        <span
+          class="${
+            active
+              ? 'adm-preview-status active'
+              : 'adm-preview-status'
+          }"
+        >
+          ${
+            active
+              ? 'ATIVO'
+              : 'INATIVO'
+          }
+        </span>
+
+      </div>
+
+      <div class="adm-preview-card">
+
+        <div class="adm-preview-cover">
+
+          <img
+            src="${esc(img)}"
+            alt=""
+            onerror="this.src='assets/banner-sapucaia.png'"
+          >
+
+          ${
+            featured
+              ? `
+                <span class="adm-preview-badge">
+                  DESTAQUE
+                </span>
+              `
+              : ''
+          }
+
+          ${
+            !active
+              ? `
+                <span class="adm-preview-inactive">
+                  INATIVO
+                </span>
+              `
+              : ''
+          }
+
+        </div>
+
+        <div class="adm-preview-content">
+
+          <div class="adm-preview-category">
+            ${esc(cat)}
+          </div>
+
+          <h2>
+            ${esc(name)}
+          </h2>
+
+          <div class="adm-preview-price">
+
+            <strong>
+              ${money(price)}
+            </strong>
+
+            ${
+              old > 0
+                ? `
+                  <del>
+                    ${money(old)}
+                  </del>
+                `
+                : ''
+            }
+
+          </div>
+
+          <div class="adm-preview-section">
+
+            <div class="adm-preview-label">
+              DETALHES
+            </div>
+
+            <p>
+              ${esc(desc)}
+            </p>
+
+          </div>
+
+          ${
+            media.length
+              ? `
+                <div class="adm-preview-section">
+
+                  <div class="adm-preview-label">
+                    IMAGENS DA DESCRIÇÃO
+                  </div>
+
+                  <div class="adm-preview-media">
+
+                    ${media
+                      .map(
+                        (url, i) => `
+                          <div class="adm-preview-media-item">
+
+                            <img
+                              src="${esc(url)}"
+                              alt="Descrição ${
+                                i + 1
+                              }"
+                            >
+
+                            <span>
+                              IMAGEM ${
+                                i + 1
+                              }
+                            </span>
+
+                          </div>
+                        `
+                      )
+                      .join('')}
+
+                  </div>
+
+                </div>
+              `
+              : ''
+          }
+
+          <div class="adm-preview-section">
+
+            <div class="adm-preview-label">
+              DÚVIDAS FREQUENTES
+            </div>
+
+            <div class="adm-preview-faq-list">
+              ${faqHtml}
+            </div>
+
+          </div>
+
+          <div class="adm-preview-actions">
+
+            <button
+              type="button"
+            >
+              Adicionar ao carrinho
+            </button>
+
+            <button
+              type="button"
+            >
+              Presentear
+            </button>
+
+          </div>
+
+          <div class="adm-preview-footer">
+
+            <span>
+              Discord conectado
+            </span>
+
+            <span>
+              Avatar + primeiro nome
+            </span>
+
+            <span>
+              ID / Passaporte
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+[
+  '#fName',
+  '#fCat',
+  '#fPrice',
+  '#fOld',
+  '#fFeatured',
+  '#fActive',
+  '#fMainUrl',
+  '#fDescImage1Url',
+  '#fDescImage2Url',
+  '#fDesc',
+  '#fFaq'
+].forEach((id) => {
+  const el = $(id);
+
+  if (!el) return;
+
+  el.addEventListener(
+    'input',
+    updateProductPreview
+  );
+
+  el.addEventListener(
+    'change',
+    updateProductPreview
+  );
+});
+
+[
+  '#fMainFile',
+  '#fDescImage1File',
+  '#fDescImage2File'
+].forEach((id) => {
+  const el = $(id);
+
+  if (!el) return;
+
+  el.addEventListener(
+    'change',
+    updateProductPreview
+  );
+});
+
+const colorFields = [
+  ['#primaryColor', 'primaryColor'],
+  [
+    '#secondaryColor',
+    'secondaryColor'
+  ],
+  [
+    '#backgroundColor',
+    'backgroundColor'
+  ],
+  [
+    '#surfaceColor',
+    'surfaceColor'
+  ],
+  ['#textColor', 'textColor'],
+  [
+    '#mutedColor',
+    'mutedColor'
+  ],
+  [
+    '#buttonColor',
+    'buttonColor'
+  ],
+  [
+    '#buttonHoverColor',
+    'buttonHoverColor'
+  ],
+  [
+    '#borderColor',
+    'borderColor'
+  ],
+  [
+    '#priceColor',
+    'priceColor'
+  ]
+];
+
 function bindColor(
   colorId,
   key
@@ -2337,52 +1813,54 @@ function bindColor(
   if (!color || !hex)
     return;
 
-  color.oninput =
-    () =>
-      applyDraftMutation(
-        (d) => {
-          d[key] =
-            color.value;
-        }
-      );
-
-  hex.onchange =
-    () => {
-
-      const value =
-        hex.value.trim();
-
-      if (
-        !/^#[\da-fA-F]{6}$/.test(
-          value
-        )
-      ) {
-        hex.value =
-          dft(key);
-
-        return;
+  color.oninput = () =>
+    applyDraftMutation(
+      (d) => {
+        d[key] =
+          color.value;
       }
+    );
 
-      applyDraftMutation(
-        (d) => {
-          d[key] =
-            value.toLowerCase();
-        }
-      );
-    };
+  hex.onchange = () => {
+    const value =
+      hex.value.trim();
+
+    if (
+      !/^#[\da-fA-F]{6}$/.test(
+        value
+      )
+    ) {
+      hex.value =
+        dft(key);
+
+      return;
+    }
+
+    applyDraftMutation(
+      (d) => {
+        d[key] =
+          value.toLowerCase();
+      }
+    );
+  };
 }
 
 function dft(key) {
   return (
     state.draft[key] ||
-    DEFAULT_APPEARANCE[key] ||
+    DEFAULT_APPEARANCE[
+      key
+    ] ||
     '#ff087f'
   );
 }
 
 colorFields.forEach(
   ([id, key]) =>
-    bindColor(id, key)
+    bindColor(
+      id,
+      key
+    )
 );
 
 function setRange(
@@ -2397,40 +1875,33 @@ function setRange(
   const out =
     $(id + 'Out');
 
-  if (!el)
-    return;
+  if (!el) return;
 
   el.value =
     state.draft[key] ??
-    DEFAULT_APPEARANCE[key] ??
+    DEFAULT_APPEARANCE[
+      key
+    ] ??
     el.value;
 
   if (out) {
     out.textContent =
       Number(
         el.value
-      ).toFixed(digits) +
-      suffix;
+      ).toFixed(
+        digits
+      ) + suffix;
   }
 
-  el.oninput =
-    () => {
-
-      applyDraftMutation(
-        (d) => {
-          d[key] =
-            Number(el.value);
-        }
-      );
-
-      if (out) {
-        out.textContent =
+  el.oninput = () =>
+    applyDraftMutation(
+      (d) => {
+        d[key] =
           Number(
             el.value
-          ).toFixed(digits) +
-          suffix;
+          );
       }
-    };
+    );
 }
 
 function bindSelect(
@@ -2440,34 +1911,31 @@ function bindSelect(
   const el =
     $(id);
 
-  if (!el)
-    return;
+  if (!el) return;
 
   el.value =
     String(
       state.draft[key] ??
-      DEFAULT_APPEARANCE[key] ??
-      el.value
+        DEFAULT_APPEARANCE[
+          key
+        ] ??
+        el.value
     );
 
-  el.onchange =
-    () => {
+  el.onchange = () =>
+    applyDraftMutation(
+      (d) => {
+        const v =
+          el.value;
 
-      applyDraftMutation(
-        (d) => {
-
-          const v =
-            el.value;
-
-          d[key] =
-            v === 'true'
-              ? true
-              : v === 'false'
-                ? false
-                : v;
-        }
-      );
-    };
+        d[key] =
+          v === 'true'
+            ? true
+            : v === 'false'
+              ? false
+              : v;
+      }
+    );
 }
 
 function bindText(
@@ -2477,20 +1945,19 @@ function bindText(
   const el =
     $(id);
 
-  if (!el)
-    return;
+  if (!el) return;
 
   el.value =
-    state.draft[key] ?? '';
+    state.draft[key] ??
+    '';
 
-  el.oninput =
-    () =>
-      applyDraftMutation(
-        (d) => {
-          d[key] =
-            el.value;
-        }
-      );
+  el.oninput = () =>
+    applyDraftMutation(
+      (d) => {
+        d[key] =
+          el.value;
+      }
+    );
 }
 
 function bindCheck(
@@ -2500,21 +1967,19 @@ function bindCheck(
   const el =
     $(id);
 
-  if (!el)
-    return;
+  if (!el) return;
 
   el.checked =
     state.draft[key] !==
     false;
 
-  el.onchange =
-    () =>
-      applyDraftMutation(
-        (d) => {
-          d[key] =
-            el.checked;
-        }
-      );
+  el.onchange = () =>
+    applyDraftMutation(
+      (d) => {
+        d[key] =
+          el.checked;
+      }
+    );
 }
 
 function fillEditor(
@@ -2525,7 +1990,6 @@ function fillEditor(
 
   colorFields.forEach(
     ([id, key]) => {
-
       const c =
         $(id);
 
@@ -2535,167 +1999,145 @@ function fillEditor(
       if (c)
         c.value =
           d[key] ||
-          DEFAULT_APPEARANCE[key];
+          DEFAULT_APPEARANCE[
+            key
+          ];
 
       if (h)
         h.value =
           d[key] ||
-          DEFAULT_APPEARANCE[key];
+          DEFAULT_APPEARANCE[
+            key
+          ];
     }
   );
 
   const ranges = [
-
     [
       '#bannerIntensity',
       'bannerIntensity',
       '%'
     ],
-
     [
       '#bannerSpeed',
       'bannerSpeed',
       'x'
     ],
-
     [
       '#bannerRadius',
       'bannerRadius',
       'px'
     ],
-
     [
       '#bannerHeight',
       'bannerHeight',
       'px'
     ],
-
     [
       '#backgroundOpacity',
       'backgroundOpacity',
       '%'
     ],
-
     [
       '#backgroundBlur',
       'backgroundBlur',
       'px'
     ],
-
     [
       '#backgroundDarkness',
       'backgroundDarkness',
       '%'
     ],
-
     [
       '#buttonRadius',
       'buttonRadius',
       'px'
     ],
-
     [
       '#buttonHeight',
       'buttonHeight',
       'px'
     ],
-
     [
       '#buttonHoverScale',
       'buttonHoverScale',
       '%'
     ],
-
     [
       '#headingSize',
       'headingSize',
       'px'
     ],
-
     [
       '#bodySize',
       'bodySize',
       'px'
     ],
-
     [
       '#buttonFontSize',
       'buttonFontSize',
       'px'
     ],
-
     [
       '#letterSpacing',
       'letterSpacing',
       'px'
     ],
-
     [
       '#cardRadius',
       'cardRadius',
       'px'
     ],
-
     [
       '#cardLift',
       'cardLift',
       'px'
     ],
-
     [
       '#cardPadding',
       'cardPadding',
       'px'
     ],
-
     [
       '#cardImageHeight',
       'cardImageHeight',
       'px'
     ],
-
     [
       '#marqueeSpeed',
       'marqueeSpeed',
       's'
     ],
-
     [
       '#marqueeSize',
       'marqueeSize',
       'px'
     ],
-
     [
       '#marqueeGap',
       'marqueeGap',
       'px'
     ],
-
     [
       '#contentMaxWidth',
       'contentMaxWidth',
       'px'
     ],
-
     [
       '#sectionGap',
       'sectionGap',
       'px'
     ],
-
     [
       '#globalRadius',
       'globalRadius',
       'px'
     ],
-
     [
       '#effectsIntensity',
       'effectsIntensity',
       '%'
     ],
-
     [
       '#vignette',
       'vignette',
@@ -2704,7 +2146,11 @@ function fillEditor(
   ];
 
   ranges.forEach(
-    ([id, key, suffix]) =>
+    ([
+      id,
+      key,
+      suffix
+    ]) =>
       setRange(
         id,
         key,
@@ -2712,129 +2158,134 @@ function fillEditor(
       )
   );
 
-  const selects = {
-    '#bannerFit':
-      'bannerFit',
+  [
+    '#bannerFit',
+    '#bannerEffect',
+    '#backgroundSize',
+    '#buttonStyle',
+    '#buttonGlow',
+    '#buttonShadow',
+    '#buttonBorder',
+    '#buttonAnimation',
+    '#headingFont',
+    '#bodyFont',
+    '#buttonFont',
+    '#headingWeight',
+    '#cardGlow',
+    '#cardBorder',
+    '#productColumns',
+    '#marqueeGlow'
+  ].forEach((id) => {
+    const key =
+      ({
+        '#bannerFit':
+          'bannerFit',
+        '#bannerEffect':
+          'bannerEffect',
+        '#backgroundSize':
+          'backgroundSize',
+        '#buttonStyle':
+          'buttonStyle',
+        '#buttonGlow':
+          'buttonGlow',
+        '#buttonShadow':
+          'buttonShadow',
+        '#buttonBorder':
+          'buttonBorder',
+        '#buttonAnimation':
+          'buttonAnimation',
+        '#headingFont':
+          'headingFont',
+        '#bodyFont':
+          'bodyFont',
+        '#buttonFont':
+          'buttonFont',
+        '#headingWeight':
+          'headingWeight',
+        '#cardGlow':
+          'cardGlow',
+        '#cardBorder':
+          'cardBorder',
+        '#productColumns':
+          'productColumns',
+        '#marqueeGlow':
+          'marqueeGlow'
+      })[id];
 
-    '#bannerEffect':
-      'bannerEffect',
+    bindSelect(
+      id,
+      key
+    );
+  });
 
-    '#backgroundSize':
-      'backgroundSize',
+  [
+    '#fxParticles',
+    '#fxStars',
+    '#fxGrid',
+    '#fxNoise',
+    '#fxCursorGlow',
+    '#reducedMotion'
+  ].forEach((id) => {
+    const key =
+      ({
+        '#fxParticles':
+          'fxParticles',
+        '#fxStars':
+          'fxStars',
+        '#fxGrid':
+          'fxGrid',
+        '#fxNoise':
+          'fxNoise',
+        '#fxCursorGlow':
+          'fxCursorGlow',
+        '#reducedMotion':
+          'reducedMotion'
+      })[id];
 
-    '#buttonStyle':
-      'buttonStyle',
+    bindCheck(
+      id,
+      key
+    );
+  });
 
-    '#buttonGlow':
-      'buttonGlow',
-
-    '#buttonShadow':
-      'buttonShadow',
-
-    '#buttonBorder':
-      'buttonBorder',
-
-    '#buttonAnimation':
-      'buttonAnimation',
-
-    '#headingFont':
-      'headingFont',
-
-    '#bodyFont':
-      'bodyFont',
-
-    '#buttonFont':
-      'buttonFont',
-
-    '#headingWeight':
-      'headingWeight',
-
-    '#cardGlow':
-      'cardGlow',
-
-    '#cardBorder':
-      'cardBorder',
-
-    '#productColumns':
-      'productColumns',
-
-    '#marqueeGlow':
-      'marqueeGlow'
-  };
-
-  Object.entries(
-    selects
-  ).forEach(
-    ([id, key]) =>
-      bindSelect(
-        id,
-        key
-      )
-  );
-
-  const checks = {
-    '#fxParticles':
-      'fxParticles',
-
-    '#fxStars':
-      'fxStars',
-
-    '#fxGrid':
-      'fxGrid',
-
-    '#fxNoise':
-      'fxNoise',
-
-    '#fxCursorGlow':
-      'fxCursorGlow',
-
-    '#reducedMotion':
-      'reducedMotion'
-  };
-
-  Object.entries(
-    checks
-  ).forEach(
-    ([id, key]) =>
-      bindCheck(
-        id,
-        key
-      )
-  );
-
-  const texts = {
-
-    '#shopNameInput':
-      'shopName',
-
-    '#cityInput':
-      'city',
-
-    '#heroTitleInput':
-      'heroTitle',
-
-    '#heroSubtitleInput':
-      'heroSubtitle',
-
-    '#heroButtonTextInput':
-      'heroButtonText',
-
-    '#heroButtonUrlInput':
-      'heroButtonUrl',
-
-    '#bannerUrl':
-      'banner',
-
-    '#backgroundUrl':
-      'backgroundImage',
-
-    '#marqueeTextInput':
+  [
+    [
+      '#shopNameInput',
+      'shopName'
+    ],
+    [
+      '#cityInput',
+      'city'
+    ],
+    [
+      '#heroTitleInput',
+      'heroTitle'
+    ],
+    [
+      '#heroSubtitleInput',
+      'heroSubtitle'
+    ],
+    [
+      '#heroButtonTextInput',
+      'heroButtonText'
+    ],
+    [
+      '#heroButtonUrlInput',
+      'heroButtonUrl'
+    ],
+    [
+      '#bannerUrl',
+      'banner'
+    ],
+    [
+      '#backgroundUrl',
+      'backgroundImage'
+    ],
+    [
+      '#marqueeTextInput',
       'marqueeText'
-  };
-
-  Object.entries(
-    texts
-  ).forEach(
+    ]
+  ].forEach(
     ([id, key]) =>
       bindText(
         id,
@@ -2857,37 +2308,31 @@ function renderEditor() {
 }
 
 function updateUploadStatus() {
-
-  if ($('#bannerUrl'))
+  if ($('#bannerUrl')) {
     $('#bannerUrl').value =
-      state.draft.banner || '';
-
-  if ($('#backgroundUrl'))
-    $('#backgroundUrl').value =
-      state.draft.backgroundImage ||
+      state.draft.banner ||
       '';
-}
+  }
 
-/* =========================================================
-   PREVIEW DA LOJA
-   ========================================================= */
+  if ($('#backgroundUrl')) {
+    $('#backgroundUrl').value =
+      state.draft
+        .backgroundImage ||
+      '';
+  }
+}
 
 function postPreview() {
   const frame =
     $('#storePreview');
 
-  if (
-    !frame ||
-    !frame.contentWindow
-  ) {
+  if (!frame?.contentWindow)
     return;
-  }
 
   frame.contentWindow.postMessage(
     {
       type:
         'sapucaia-preview',
-
       settings:
         clone(
           state.draft
@@ -2905,7 +2350,6 @@ function postPreview() {
 window.addEventListener(
   'message',
   (event) => {
-
     if (
       event.origin !==
         location.origin ||
@@ -2941,51 +2385,30 @@ function focusPreview(
       {
         type:
           'sapucaia-preview-focus',
-
         target
       },
       location.origin
     );
 }
 
-function clearFocus() {
-  $('#storePreview')
-    ?.contentWindow
-    ?.postMessage(
-      {
-        type:
-          'sapucaia-preview-clear-focus'
-      },
-      location.origin
-    );
-}
-
-/* =========================================================
-   ABAS DO EDITOR
-   ========================================================= */
-
 $$('.editor-tab').forEach(
-  (button) => {
-
+  (button) =>
     button.addEventListener(
       'click',
       () => {
+        $$('.editor-tab').forEach(
+          (x) =>
+            x.classList.remove(
+              'active'
+            )
+        );
 
-        $$('.editor-tab')
-          .forEach(
-            (x) =>
-              x.classList.remove(
-                'active'
-              )
-          );
-
-        $$('.editor-section')
-          .forEach(
-            (x) =>
-              x.classList.remove(
-                'active'
-              )
-          );
+        $$('.editor-section').forEach(
+          (x) =>
+            x.classList.remove(
+              'active'
+            )
+        );
 
         button.classList.add(
           'active'
@@ -2993,98 +2416,93 @@ $$('.editor-tab').forEach(
 
         $(
           '#editor-' +
-          button.dataset.editor
+            button.dataset.editor
         )?.classList.add(
           'active'
         );
       }
-    );
-  }
+    )
 );
 
 $$('.focus-btn').forEach(
-  (button) => {
-
+  (button) =>
     button.addEventListener(
       'click',
       () =>
         focusPreview(
           button.dataset.focus
         )
-    );
-  }
+    )
 );
 
-$('#clearFocus')?.addEventListener(
-  'click',
-  clearFocus
-);
+$('#clearFocus').onclick =
+  () =>
+    $('#storePreview')
+      ?.contentWindow
+      ?.postMessage(
+        {
+          type:
+            'sapucaia-preview-clear-focus'
+        },
+        location.origin
+      );
 
-$('#exitFocus')?.addEventListener(
-  'click',
-  clearFocus
-);
+$('#exitFocus').onclick =
+  () =>
+    $('#storePreview')
+      ?.contentWindow
+      ?.postMessage(
+        {
+          type:
+            'sapucaia-preview-clear-focus'
+        },
+        location.origin
+      );
 
-$('#previewDesktop')?.addEventListener(
-  'click',
+$('#previewDesktop').onclick =
   () => {
-
     $('#previewWrap')
-      ?.classList.remove(
+      .classList.remove(
         'mobile'
       );
 
     $('#previewDesktop')
-      ?.classList.add(
+      .classList.add(
         'active'
       );
 
     $('#previewMobile')
-      ?.classList.remove(
+      .classList.remove(
         'active'
       );
-  }
-);
+  };
 
-$('#previewMobile')?.addEventListener(
-  'click',
+$('#previewMobile').onclick =
   () => {
-
     $('#previewWrap')
-      ?.classList.add(
+      .classList.add(
         'mobile'
       );
 
     $('#previewMobile')
-      ?.classList.add(
+      .classList.add(
         'active'
       );
 
     $('#previewDesktop')
-      ?.classList.remove(
+      .classList.remove(
         'active'
       );
-  }
-);
+  };
 
-/* =========================================================
-   DESFAZER / REFAZER
-   ========================================================= */
+$('#undoAppearance').onclick =
+  undo;
 
-$('#undoAppearance')?.addEventListener(
-  'click',
-  undo
-);
+$('#redoAppearance').onclick =
+  redo;
 
-$('#redoAppearance')?.addEventListener(
-  'click',
-  redo
-);
-
-$('#resetPreview')?.addEventListener(
-  'click',
+$('#resetPreview').onclick =
   () => {
-
     state.draft =
       clone(
         state.settings
@@ -3101,16 +2519,13 @@ $('#resetPreview')?.addEventListener(
     toast(
       'Edição revertida para o último estado salvo.'
     );
-  }
-);
+  };
 
-$('#resetDefaults')?.addEventListener(
-  'click',
+$('#resetDefaults').onclick =
   () => {
-
     if (
       !confirm(
-        'Restaurar todos os padrões do editor visual?'
+        'Restaurar todos os padrões do editor visual? As mudanças só serão aplicadas na loja quando você publicar.'
       )
     ) {
       return;
@@ -3132,20 +2547,26 @@ $('#resetDefaults')?.addEventListener(
     toast(
       'Padrão da loja restaurado na prévia.'
     );
-  }
-);
+  };
 
-/* =========================================================
-   UPLOAD VISUAL
-   ========================================================= */
+function clearFocus() {
+  $('#storePreview')
+    ?.contentWindow
+    ?.postMessage(
+      {
+        type:
+          'sapucaia-preview-clear-focus'
+      },
+      location.origin
+    );
+}
 
 async function uploadVisual(
   file,
   key,
   inputId
 ) {
-  if (!file)
-    return;
+  if (!file) return;
 
   if (
     file.size >
@@ -3159,7 +2580,6 @@ async function uploadVisual(
   }
 
   try {
-
     const url =
       await uploadFile(
         file
@@ -3171,14 +2591,14 @@ async function uploadVisual(
       }
     );
 
-    if (inputId)
+    if (inputId) {
       $(inputId).value =
         url;
+    }
 
     toast(
       'Arquivo enviado para a prévia.'
     );
-
   } catch (error) {
     toast(
       error.message
@@ -3186,118 +2606,89 @@ async function uploadVisual(
   }
 }
 
-$('#bannerFile')?.addEventListener(
-  'change',
+$('#bannerFile').onchange =
   () =>
     uploadVisual(
       $('#bannerFile')
-        ?.files?.[0],
-
+        .files[0],
       'banner',
-
       '#bannerUrl'
-    )
-);
+    );
 
-$('#backgroundFile')?.addEventListener(
-  'change',
+$('#backgroundFile').onchange =
   () =>
     uploadVisual(
       $('#backgroundFile')
-        ?.files?.[0],
-
+        .files[0],
       'backgroundImage',
-
       '#backgroundUrl'
-    )
-);
+    );
 
-/* =========================================================
-   SALVAR CONFIGURAÇÕES
-   ========================================================= */
-
-$('#saveAppearance')?.addEventListener(
-  'click',
+$('#saveAppearance').onclick =
   () =>
     saveSettings(
       state.draft
-    )
-);
+    );
 
-$('#savePayment')?.addEventListener(
-  'click',
+$('#savePayment').onclick =
   () =>
     saveSettings({
       paymentProvider:
         $('#paymentProvider')
-          ?.value ||
-        'mercadopago',
+          .value,
 
       pixEnabled:
         $('#pixEnabled')
-          ?.value === 'true',
+          .value ===
+        'true',
 
       infinitePayEnabled:
         $('#infinitePayEnabled')
-          ?.value === 'true',
+          .value ===
+        'true',
 
       infinitePayHandle:
         $('#infinitePayHandle')
-          ?.value
-          .trim() || ''
-    })
-);
+          .value.trim()
+    });
 
-$('#saveDelivery')?.addEventListener(
-  'click',
+$('#saveDelivery').onclick =
   () =>
     saveSettings({
       fivemServerName:
         $('#fivemServerName')
-          ?.value
-          .trim() || '',
+          .value.trim(),
 
       fivemWebhookUrl:
         $('#fivemWebhookUrl')
-          ?.value
-          .trim() || ''
-    })
-);
+          .value.trim()
+    });
 
-$('#saveDiscord')?.addEventListener(
-  'click',
+$('#saveDiscord').onclick =
   () =>
     saveSettings({
       discordClientId:
         $('#discordClientId')
-          ?.value
-          .trim() || '',
+          .value.trim(),
 
       discordRedirectUri:
         $('#discordRedirectUri')
-          ?.value
-          .trim() || '',
+          .value.trim(),
 
       discordScopes:
         $('#discordScopes')
-          ?.value
-          .trim() ||
-        'identify email'
-    })
-);
+          .value.trim()
+    });
 
-$('#saveSupport')?.addEventListener(
-  'click',
+$('#saveSupport').onclick =
   async () => {
-
     let faq;
 
     try {
-
       faq =
         JSON.parse(
           $('#faqJson')
-            ?.value || '[]'
+            .value
         );
 
       if (
@@ -3305,9 +2696,7 @@ $('#saveSupport')?.addEventListener(
       ) {
         throw new Error();
       }
-
     } catch {
-
       toast(
         'FAQ precisa ser um JSON válido em lista.'
       );
@@ -3318,109 +2707,85 @@ $('#saveSupport')?.addEventListener(
     await saveSettings({
       discordUrl:
         $('#supportDiscordUrl')
-          ?.value
-          .trim() || '',
+          .value.trim(),
 
       supportUrl:
         $('#supportUrl')
-          ?.value
-          .trim() || '',
+          .value.trim(),
 
       supportEmail:
         $('#supportEmail')
-          ?.value
-          .trim() || '',
+          .value.trim(),
 
       termsUrl:
         $('#termsUrl')
-          ?.value
-          .trim() ||
+          .value.trim() ||
         'terms.html',
 
       faq
     });
-  }
-);
+  };
 
-/* =========================================================
-   SEGURANÇA
-   ========================================================= */
-
-$('#changeCredentials')?.addEventListener(
-  'click',
+$('#changeCredentials').onclick =
   async () => {
-
     try {
-
       await api(
         '/api/auth',
         {
           method: 'POST',
-
           headers: {
             'content-type':
               'application/json'
           },
+          body: JSON.stringify(
+            {
+              action:
+                'change-credentials',
 
-          body: JSON.stringify({
-            action:
-              'change-credentials',
+              username:
+                $('#securityUser')
+                  .value.trim(),
 
-            username:
-              $('#securityUser')
-                ?.value
-                .trim() || '',
+              currentPassword:
+                $('#securityCurrent')
+                  .value,
 
-            currentPassword:
-              $('#securityCurrent')
-                ?.value || '',
+              newPassword:
+                $('#securityNew')
+                  .value,
 
-            newPassword:
-              $('#securityNew')
-                ?.value || '',
-
-            confirmation:
-              $('#securityConfirm')
-                ?.value || ''
-          })
+              confirmation:
+                $('#securityConfirm')
+                  .value
+            }
+          )
         }
       );
 
-      if ($('#securityCurrent'))
-        $('#securityCurrent').value =
-          '';
+      $('#securityCurrent').value =
+        '';
 
-      if ($('#securityNew'))
-        $('#securityNew').value =
-          '';
+      $('#securityNew').value =
+        '';
 
-      if ($('#securityConfirm'))
-        $('#securityConfirm').value =
-          '';
+      $('#securityConfirm').value =
+        '';
 
       toast(
         'Credenciais alteradas.'
       );
-
     } catch (error) {
       toast(
         error.message
       );
     }
-  }
-);
-
-/* =========================================================
-   SINCRONIZAÇÃO AUTOMÁTICA
-   ========================================================= */
+  };
 
 setInterval(
   async () => {
-
     if (
       $('#app')
-        ?.classList
-        .contains(
+        ?.classList.contains(
           'hidden'
         )
     ) {
@@ -3428,25 +2793,21 @@ setInterval(
     }
 
     try {
-
       const [
         p,
         o,
         c
-      ] =
-        await Promise.all([
-          api(
-            '/api/store?resource=products'
-          ),
-
-          api(
-            '/api/store?resource=orders'
-          ),
-
-          api(
-            '/api/store?resource=customers'
-          )
-        ]);
+      ] = await Promise.all([
+        api(
+          '/api/store?resource=products'
+        ),
+        api(
+          '/api/store?resource=orders'
+        ),
+        api(
+          '/api/store?resource=customers'
+        )
+      ]);
 
       state.products =
         p.products || [];
@@ -3459,26 +2820,14 @@ setInterval(
 
       renderAll();
 
-      if ($('#adminStatus')) {
-        $('#adminStatus').textContent =
-          '● Sincronizado';
-      }
-
+      $('#adminStatus').textContent =
+        '● Sincronizado';
     } catch {
-
-      if ($('#adminStatus')) {
-        $('#adminStatus').textContent =
-          '● Aguardando conexão';
-      }
+      $('#adminStatus').textContent =
+        '● Aguardando conexão';
     }
-
   },
   10000
 );
 
-/* =========================================================
-   INICIAR
-   ========================================================= */
-
 boot();
-```
